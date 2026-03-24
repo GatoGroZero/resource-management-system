@@ -32,7 +32,12 @@ function LoginPage() {
       const response = await loginRequest(data)
       login(response)
       showToast('success', 'Inicio de sesión correcto')
-      navigate('/dashboard')
+
+      if (response.role === 'ADMIN') {
+        navigate('/dashboard')
+      } else {
+        navigate('/requests/new')
+      }
     } catch (error) {
       const message = error?.response?.data?.message || 'Error al iniciar sesión'
       showToast('error', message)
@@ -50,7 +55,7 @@ function LoginPage() {
             <label className="auth-label">Correo</label>
             <input
               type="email"
-              placeholder="admin@sgr.com"
+              placeholder="correo@utez.edu.mx"
               {...register('email')}
               className="auth-input"
             />
