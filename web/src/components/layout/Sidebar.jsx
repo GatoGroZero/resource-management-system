@@ -4,9 +4,10 @@ const linkStyle = ({ isActive }) => ({
   display: 'block',
   padding: '0.8rem 1rem',
   borderRadius: '10px',
-  background: isActive ? '#2563eb' : 'transparent',
-  color: isActive ? '#ffffff' : '#e5e7eb',
+  background: isActive ? '#C8E6C9' : 'transparent',
+  color: isActive ? '#022859' : '#E5E7EB',
   marginBottom: '0.5rem',
+  fontWeight: isActive ? '700' : '500',
 })
 
 function Sidebar() {
@@ -14,13 +15,13 @@ function Sidebar() {
     <aside
       style={{
         width: '250px',
-        background: '#111827',
-        color: '#ffffff',
+        background: '#01402E',
+        color: '#FFFFFF',
         padding: '1.5rem 1rem',
         minHeight: '100vh',
       }}
     >
-      <h2 style={{ marginBottom: '1.5rem' }}>SGR</h2>
+      <h2 style={{ marginBottom: '1.5rem', color: '#FFFFFF' }}>SGR</h2>
 
       <NavLink to="/dashboard" style={linkStyle}>Dashboard</NavLink>
       <NavLink to="/requests" style={linkStyle}>Solicitudes</NavLink>

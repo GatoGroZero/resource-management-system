@@ -13,17 +13,19 @@ function Topbar() {
   return (
     <header
       style={{
-        background: '#ffffff',
+        background: '#FFFFFF',
         padding: '1rem 1.5rem',
-        borderBottom: '1px solid #e5e7eb',
+        borderBottom: '1px solid #E5E7EB',
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
       }}
     >
       <div>
-        <strong>{user?.name} {user?.lastName}</strong>
-        <p style={{ color: '#6b7280', fontSize: '0.9rem' }}>{user?.email}</p>
+        <strong style={{ color: '#022859' }}>
+          {user?.name} {user?.lastName}
+        </strong>
+        <p style={{ color: '#8A9BB8', fontSize: '0.9rem' }}>{user?.email}</p>
       </div>
 
       <button
@@ -32,8 +34,8 @@ function Topbar() {
           padding: '0.8rem 1rem',
           border: 'none',
           borderRadius: '10px',
-          background: '#dc2626',
-          color: '#ffffff',
+          background: '#01402E',
+          color: '#FFFFFF',
           cursor: 'pointer',
           fontWeight: '700',
         }}

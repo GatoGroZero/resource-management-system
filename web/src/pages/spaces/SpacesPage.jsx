@@ -4,23 +4,20 @@ import PageHeader from '../../components/common/PageHeader'
 function SpacesPage() {
   return (
     <DashboardLayout>
-      <PageHeader
-        title="Gestión de Espacios"
-        subtitle="Consulta de espacios disponibles, ocupados o en mantenimiento"
-      />
-
+      <PageHeader title="Espacios" subtitle="Gestión de espacios" />
       <div style={cardStyle}>
-        <p>Aquí se mostrarán los espacios del sistema.</p>
+        <p>Página de espacios.</p>
       </div>
     </DashboardLayout>
   )
 }
 
 const cardStyle = {
-  background: '#ffffff',
-  padding: '1.2rem',
-  borderRadius: '14px',
-  boxShadow: '0 6px 16px rgba(0,0,0,0.06)',
-}
+    background: '#FFFFFF',
+    padding: '1.2rem',
+    borderRadius: '14px',
+    boxShadow: '0 6px 16px rgba(0,0,0,0.06)',
+    border: '2px solid #C8E6C9',
+  }
 
 export default SpacesPage

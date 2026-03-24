@@ -4,23 +4,20 @@ import PageHeader from '../../components/common/PageHeader'
 function EquipmentsPage() {
   return (
     <DashboardLayout>
-      <PageHeader
-        title="Gestión de Equipos"
-        subtitle="Consulta de equipos disponibles, prestados o en mantenimiento"
-      />
-
+      <PageHeader title="Equipos" subtitle="Gestión de equipos" />
       <div style={cardStyle}>
-        <p>Aquí se mostrarán los equipos del sistema.</p>
+        <p>Página de equipos.</p>
       </div>
     </DashboardLayout>
   )
 }
 
 const cardStyle = {
-  background: '#ffffff',
-  padding: '1.2rem',
-  borderRadius: '14px',
-  boxShadow: '0 6px 16px rgba(0,0,0,0.06)',
-}
+    background: '#FFFFFF',
+    padding: '1.2rem',
+    borderRadius: '14px',
+    boxShadow: '0 6px 16px rgba(0,0,0,0.06)',
+    border: '2px solid #C8E6C9',
+  }
 
 export default EquipmentsPage

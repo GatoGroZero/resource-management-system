@@ -7,11 +7,7 @@ function ProfilePage() {
 
   return (
     <DashboardLayout>
-      <PageHeader
-        title="Perfil"
-        subtitle="Información del usuario autenticado"
-      />
-
+      <PageHeader title="Perfil" subtitle="Información del usuario" />
       <div style={cardStyle}>
         <p><strong>Nombre:</strong> {user?.name} {user?.lastName}</p>
         <p><strong>Correo:</strong> {user?.email}</p>
@@ -20,14 +16,12 @@ function ProfilePage() {
     </DashboardLayout>
   )
 }
-
 const cardStyle = {
-  background: '#ffffff',
-  padding: '1.2rem',
-  borderRadius: '14px',
-  boxShadow: '0 6px 16px rgba(0,0,0,0.06)',
-  display: 'grid',
-  gap: '0.7rem',
-}
+    background: '#FFFFFF',
+    padding: '1.2rem',
+    borderRadius: '14px',
+    boxShadow: '0 6px 16px rgba(0,0,0,0.06)',
+    border: '2px solid #C8E6C9',
+  }
 
 export default ProfilePage

@@ -34,12 +34,12 @@ function DashboardPage() {
     </DashboardLayout>
   )
 }
-
 const cardStyle = {
-  background: '#ffffff',
-  padding: '1.2rem',
-  borderRadius: '14px',
-  boxShadow: '0 6px 16px rgba(0,0,0,0.06)',
-}
+    background: '#FFFFFF',
+    padding: '1.2rem',
+    borderRadius: '14px',
+    boxShadow: '0 6px 16px rgba(0,0,0,0.06)',
+    border: '2px solid #C8E6C9',
+  }
 
 export default DashboardPage
