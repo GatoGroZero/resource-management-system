@@ -1,0 +1,35 @@
+# IntelliJ / IDEA
+.idea/
+*.iml
+
+# VS Code
+.vscode/
+
+# Java / Maven / Spring
+target/
+logs/
+*.log
+.mvn/wrapper/maven-wrapper.jar
+
+# Linux
+*~
+
+# Env files
+.env
+.env.*
+
+# OS
+.DS_Store
+
+# Node
+node_modules/
+dist/
+build/
+
+# Android
+.gradle/
+local.properties
+**/build/
+
+# Misc
+coverage/
