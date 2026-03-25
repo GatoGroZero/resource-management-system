@@ -1,4 +1,5 @@
 import { NavLink } from 'react-router-dom'
+import { useAuth } from '../../context/AuthContext'
 
 const baseLinkStyle = {
   display: 'block',
@@ -16,6 +17,9 @@ const getLinkStyle = ({ isActive }) => ({
 })
 
 function Sidebar() {
+  const { user } = useAuth()
+  const isAdmin = user?.role === 'ADMIN'
+
   return (
     <aside
       style={{
@@ -40,17 +44,21 @@ function Sidebar() {
         Nueva Solicitud
       </NavLink>
 
-      <NavLink to="/spaces" style={getLinkStyle}>
-        Espacios
-      </NavLink>
+      {isAdmin && (
+        <>
+          <NavLink to="/spaces" style={getLinkStyle}>
+            Espacios
+          </NavLink>
 
-      <NavLink to="/equipments" style={getLinkStyle}>
-        Equipos
-      </NavLink>
+          <NavLink to="/equipments" style={getLinkStyle}>
+            Equipos
+          </NavLink>
 
-      <NavLink to="/history" style={getLinkStyle}>
-        Historial
-      </NavLink>
+          <NavLink to="/history" style={getLinkStyle}>
+            Historial
+          </NavLink>
+        </>
+      )}
 
       <NavLink to="/profile" style={getLinkStyle}>
         Perfil
