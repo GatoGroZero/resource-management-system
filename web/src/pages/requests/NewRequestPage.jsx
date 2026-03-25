@@ -5,6 +5,7 @@ import DashboardLayout from '../../components/layout/DashboardLayout'
 import PageHeader from '../../components/common/PageHeader'
 import AppInput from '../../components/common/AppInput'
 import AppButton from '../../components/common/AppButton'
+import AppCard from '../../components/common/AppCard'
 import { createRequest } from '../../api/requestApi'
 import { useAuth } from '../../context/AuthContext'
 import { showToast } from '../../utils/alertUtils'
@@ -49,40 +50,78 @@ function NewRequestPage() {
     <DashboardLayout>
       <PageHeader
         title="Nueva Solicitud"
-        subtitle="Registra una nueva solicitud de recurso"
+        subtitle="Completa el formulario para registrar una nueva solicitud"
       />
 
-      <div style={cardStyle}>
-        <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      <AppCard style={formCardStyle}>
+        <form onSubmit={handleSubmit(onSubmit)} style={formStyle}>
           <AppInput
-            label="Título"
-            placeholder="Ej. Prestamo de proyector"
+            label="Título de la solicitud"
+            placeholder="Escribe el título de la solicitud"
             error={errors.title?.message}
             {...register('title')}
           />
 
-          <AppInput
-            label="Descripción"
-            placeholder="Describe tu solicitud"
-            error={errors.description?.message}
-            {...register('description')}
-          />
+          <div style={fieldStyle}>
+            <label style={labelStyle}>Descripción</label>
+            <textarea
+              placeholder="Escribe una descripción detallada"
+              {...register('description')}
+              style={textareaStyle}
+            />
+            {errors.description && (
+              <span style={errorStyle}>{errors.description.message}</span>
+            )}
+          </div>
 
-          <AppButton type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'Guardando...' : 'Crear solicitud'}
-          </AppButton>
+          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <AppButton type="submit" disabled={isSubmitting} style={{ minWidth: '220px' }}>
+              {isSubmitting ? 'Guardando...' : 'Enviar solicitud'}
+            </AppButton>
+          </div>
         </form>
-      </div>
+      </AppCard>
     </DashboardLayout>
   )
 }
 
-const cardStyle = {
-  background: '#ffffff',
-  padding: '1.2rem',
-  borderRadius: '14px',
-  boxShadow: '0 6px 16px rgba(0,0,0,0.06)',
-  maxWidth: '600px',
+const formCardStyle = {
+  maxWidth: '820px',
+  padding: '1.5rem',
+}
+
+const formStyle = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '1rem',
+}
+
+const fieldStyle = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '0.45rem',
+}
+
+const labelStyle = {
+  fontWeight: '600',
+  color: '#022859',
+}
+
+const textareaStyle = {
+  minHeight: '150px',
+  padding: '0.95rem 1rem',
+  borderRadius: '12px',
+  border: '1px solid #D8DEE8',
+  outline: 'none',
+  background: '#F5F7FA',
+  color: '#022859',
+  resize: 'vertical',
+  font: 'inherit',
+}
+
+const errorStyle = {
+  color: '#8B0000',
+  fontSize: '0.85rem',
 }
 
 export default NewRequestPage

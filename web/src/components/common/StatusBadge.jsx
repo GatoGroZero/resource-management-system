@@ -2,11 +2,11 @@ function StatusBadge({ status }) {
     const getStyles = () => {
       switch (status) {
         case 'APPROVED':
-          return { background: '#dcfce7', color: '#166534' }
+          return { background: '#C8E6C9', color: '#01402E' }
         case 'REJECTED':
-          return { background: '#fee2e2', color: '#991b1b' }
+          return { background: '#FFE0E0', color: '#8B0000' }
         default:
-          return { background: '#fef3c7', color: '#92400e' }
+          return { background: '#FFE5CC', color: '#8B4500' }
       }
     }
   

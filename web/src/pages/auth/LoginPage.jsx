@@ -1,10 +1,11 @@
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { loginRequest } from '../../api/authApi'
 import { useAuth } from '../../context/AuthContext'
 import { showToast } from '../../utils/alertUtils'
+import AuthShell from '../../components/auth/AuthShell'
 
 const loginSchema = z.object({
   email: z.string().min(1, 'El correo es obligatorio').email('El correo no es válido'),
@@ -32,7 +33,12 @@ function LoginPage() {
       const response = await loginRequest(data)
       login(response)
       showToast('success', 'Inicio de sesión correcto')
-      navigate('/dashboard')
+
+      if (response.role === 'ADMIN') {
+        navigate('/dashboard')
+      } else {
+        navigate('/requests/new')
+      }
     } catch (error) {
       const message = error?.response?.data?.message || 'Error al iniciar sesión'
       showToast('error', message)
@@ -40,40 +46,44 @@ function LoginPage() {
   }
 
   return (
-    <div className="auth-page">
-      <div className="auth-card">
-        <h1 className="auth-title">Iniciar sesión</h1>
-        <p className="auth-subtitle">Accede al sistema de gestión de recursos</p>
+    <AuthShell
+      title="Iniciar sesión"
+      subtitle="Accede al sistema con tu cuenta institucional."
+    >
+      <form onSubmit={handleSubmit(onSubmit)} className="auth-form">
+        <div className="auth-field">
+          <label className="auth-label">Correo</label>
+          <input
+            type="email"
+            placeholder="Ingresa tu correo"
+            {...register('email')}
+            className="auth-input"
+          />
+          {errors.email && <span className="auth-error">{errors.email.message}</span>}
+        </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="auth-form">
-          <div className="auth-field">
-            <label className="auth-label">Correo</label>
-            <input
-              type="email"
-              placeholder="admin@sgr.com"
-              {...register('email')}
-              className="auth-input"
-            />
-            {errors.email && <span className="auth-error">{errors.email.message}</span>}
-          </div>
+        <div className="auth-field">
+          <label className="auth-label">Contraseña</label>
+          <input
+            type="password"
+            placeholder="Ingresa tu contraseña"
+            {...register('password')}
+            className="auth-input"
+          />
+          {errors.password && <span className="auth-error">{errors.password.message}</span>}
+        </div>
 
-          <div className="auth-field">
-            <label className="auth-label">Contraseña</label>
-            <input
-              type="password"
-              placeholder="••••••••"
-              {...register('password')}
-              className="auth-input"
-            />
-            {errors.password && <span className="auth-error">{errors.password.message}</span>}
-          </div>
+        <div style={{ textAlign: 'right', marginTop: '-0.2rem' }}>
+          <Link to="/forgot-password" className="auth-link">
+            ¿Olvidaste tu contraseña?
+          </Link>
+        </div>
 
-          <button type="submit" disabled={isSubmitting} className="auth-button">
-            {isSubmitting ? 'Ingresando...' : 'Ingresar'}
-          </button>
-        </form>
-      </div>
-    </div>
+        <button type="submit" disabled={isSubmitting} className="auth-button">
+          {isSubmitting ? 'Ingresando...' : 'Ingresar'}
+        </button>
+      </form>
+    </AuthShell>
   )
 }
 
