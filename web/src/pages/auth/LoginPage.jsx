@@ -47,8 +47,10 @@ function LoginPage() {
   return (
     <div className="auth-page">
       <div className="auth-card">
-        <h1 className="auth-title">Iniciar sesión</h1>
-        <p className="auth-subtitle">Accede al sistema de gestión de recursos</p>
+        <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+          <h1 className="auth-title">Iniciar sesión</h1>
+          <p className="auth-subtitle">Accede al sistema de gestión de recursos</p>
+        </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="auth-form">
           <div className="auth-field">
@@ -73,16 +75,16 @@ function LoginPage() {
             {errors.password && <span className="auth-error">{errors.password.message}</span>}
           </div>
 
+          <div style={{ textAlign: 'right', marginTop: '-0.25rem' }}>
+            <Link to="/forgot-password" className="auth-link">
+              ¿Olvidaste tu contraseña?
+            </Link>
+          </div>
+
           <button type="submit" disabled={isSubmitting} className="auth-button">
             {isSubmitting ? 'Ingresando...' : 'Ingresar'}
           </button>
         </form>
-
-        <div style={{ marginTop: '1rem', textAlign: 'center' }}>
-          <Link to="/forgot-password" className="auth-link">
-            ¿Olvidaste tu contraseña?
-          </Link>
-        </div>
       </div>
     </div>
   )
