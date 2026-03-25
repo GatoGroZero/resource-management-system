@@ -1,7 +1,7 @@
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { loginRequest } from '../../api/authApi'
 import { useAuth } from '../../context/AuthContext'
 import { showToast } from '../../utils/alertUtils'
@@ -77,6 +77,12 @@ function LoginPage() {
             {isSubmitting ? 'Ingresando...' : 'Ingresar'}
           </button>
         </form>
+
+        <div style={{ marginTop: '1rem', textAlign: 'center' }}>
+          <Link to="/forgot-password" className="auth-link">
+            ¿Olvidaste tu contraseña?
+          </Link>
+        </div>
       </div>
     </div>
   )
