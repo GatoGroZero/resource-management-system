@@ -68,36 +68,39 @@ function RequestsPage() {
       />
 
       {loading ? (
-        <p>Cargando solicitudes...</p>
+        <div style={cardStyle}>
+          <p style={{ color: '#8A9BB8' }}>Cargando solicitudes...</p>
+        </div>
       ) : visibleRequests.length === 0 ? (
         <div style={cardStyle}>
-          <p>No hay solicitudes registradas.</p>
+          <p style={{ color: '#8A9BB8' }}>No hay solicitudes registradas.</p>
         </div>
       ) : (
         <div style={{ display: 'grid', gap: '1rem' }}>
           {visibleRequests.map((request) => (
             <div key={request.id} style={cardStyle}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.6rem' }}>
-                <h3 style={{ color: '#022859' }}>{request.title}</h3>
+              <div style={topRowStyle}>
+                <div>
+                  <h3 style={titleStyle}>{request.title}</h3>
+                  <p style={mutedStyle}>
+                    Solicitante: {request.requester?.name} {request.requester?.lastName}
+                  </p>
+                </div>
+
                 <StatusBadge status={request.status} />
               </div>
 
-              <p style={{ marginBottom: '0.6rem', color: '#022859' }}>
-                {request.description}
-              </p>
-
-              <p style={{ color: '#8A9BB8', fontSize: '0.92rem', marginBottom: '0.8rem' }}>
-                Solicitante: {request.requester?.name} {request.requester?.lastName}
-              </p>
+              <p style={descriptionStyle}>{request.description}</p>
 
               {request.responseMessage && (
-                <p style={{ color: '#01402E', fontSize: '0.92rem', marginBottom: '0.8rem' }}>
-                  Respuesta: {request.responseMessage}
-                </p>
+                <div style={responseBoxStyle}>
+                  <strong style={{ color: '#01402E' }}>Respuesta:</strong>{' '}
+                  <span style={{ color: '#01402E' }}>{request.responseMessage}</span>
+                </div>
               )}
 
               {isAdmin && request.status === 'PENDING' && (
-                <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginTop: '1rem' }}>
                   <AppButton onClick={() => handleApprove(request.id)}>
                     Aprobar
                   </AppButton>
@@ -120,10 +123,42 @@ function RequestsPage() {
 
 const cardStyle = {
   background: '#FFFFFF',
-  padding: '1.2rem',
-  borderRadius: '14px',
+  padding: '1.3rem',
+  borderRadius: '16px',
   boxShadow: '0 6px 16px rgba(0,0,0,0.06)',
   border: '2px solid #C8E6C9',
+}
+
+const topRowStyle = {
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'flex-start',
+  gap: '1rem',
+  marginBottom: '0.8rem',
+}
+
+const titleStyle = {
+  color: '#022859',
+  marginBottom: '0.35rem',
+}
+
+const mutedStyle = {
+  color: '#8A9BB8',
+  fontSize: '0.92rem',
+}
+
+const descriptionStyle = {
+  color: '#022859',
+  lineHeight: '1.6',
+  marginBottom: '0.9rem',
+}
+
+const responseBoxStyle = {
+  background: '#F0FFF4',
+  border: '1px solid #C8E6C9',
+  padding: '0.8rem',
+  borderRadius: '10px',
+  marginTop: '0.5rem',
 }
 
 export default RequestsPage

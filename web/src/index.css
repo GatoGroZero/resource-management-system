@@ -16,7 +16,8 @@ a {
 }
 
 button,
-input {
+input,
+textarea {
   font: inherit;
 }
 
@@ -26,30 +27,35 @@ input {
   justify-content: center;
   align-items: center;
   background: #F8F9FA;
-  padding: 1rem;
+  padding: 1.5rem;
 }
 
 .auth-card {
-  width: 100%;
-  max-width: 420px;
   background: #FFFFFF;
-  padding: 2rem;
-  border-radius: 18px;
+  padding: 2.2rem;
+  border-radius: 24px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
   border: 1px solid #E5E7EB;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.auth-card-single {
+  width: 100%;
+  max-width: 520px;
 }
 
 .auth-title {
   font-size: 1.8rem;
   margin-bottom: 0.5rem;
-  text-align: center;
   color: #022859;
 }
 
 .auth-subtitle {
-  text-align: center;
   margin-bottom: 1.5rem;
   color: #8A9BB8;
+  line-height: 1.6;
 }
 
 .auth-form {
@@ -61,7 +67,7 @@ input {
 .auth-field {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0.45rem;
 }
 
 .auth-label {
@@ -70,19 +76,23 @@ input {
 }
 
 .auth-input {
-  padding: 0.85rem 1rem;
-  border-radius: 10px;
-  border: 1px solid #E5E7EB;
+  padding: 0.95rem 1rem;
+  border-radius: 12px;
+  border: 1px solid #D8DEE8;
   outline: none;
-  background: #F5F5F5;
+  background: #F5F7FA;
   color: #022859;
+}
+
+.auth-input:focus {
+  border-color: #01402E;
 }
 
 .auth-button {
   margin-top: 0.5rem;
-  padding: 0.9rem 1rem;
+  padding: 1rem 1rem;
   border: none;
-  border-radius: 10px;
+  border-radius: 12px;
   background: #01402E;
   color: #FFFFFF;
   cursor: pointer;
@@ -99,4 +109,9 @@ input {
 .auth-error {
   color: #8B0000;
   font-size: 0.85rem;
+}
+
+.auth-helper {
+  text-align: center;
+  margin-top: 1rem;
 }

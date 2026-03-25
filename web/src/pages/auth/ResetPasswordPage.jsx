@@ -5,15 +5,12 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useNavigate } from 'react-router-dom'
 import { resetPasswordRequest } from '../../api/authApi'
 import { showToast } from '../../utils/alertUtils'
+import AuthShell from '../../components/auth/AuthShell'
 
 const schema = z
   .object({
-    newPassword: z
-      .string()
-      .min(8, 'La contraseña debe tener al menos 8 caracteres'),
-    confirmPassword: z
-      .string()
-      .min(8, 'La confirmación debe tener al menos 8 caracteres'),
+    newPassword: z.string().min(8, 'La contraseña debe tener al menos 8 caracteres'),
+    confirmPassword: z.string().min(8, 'La confirmación debe tener al menos 8 caracteres'),
   })
   .refine((data) => data.newPassword === data.confirmPassword, {
     message: 'Las contraseñas no coinciden',
@@ -63,46 +60,38 @@ function ResetPasswordPage() {
   }
 
   return (
-    <div className="auth-page">
-      <div className="auth-card">
-        <h1 className="auth-title">Nueva contraseña</h1>
-        <p className="auth-subtitle">
-          Ingresa tu nueva contraseña para completar la recuperación
-        </p>
+    <AuthShell
+      title="Nueva contraseña"
+      subtitle="Ingresa tu nueva contraseña para completar la recuperación."
+    >
+      <form onSubmit={handleSubmit(onSubmit)} className="auth-form">
+        <div className="auth-field">
+          <label className="auth-label">Nueva contraseña</label>
+          <input
+            type="password"
+            placeholder="********"
+            {...register('newPassword')}
+            className="auth-input"
+          />
+          {errors.newPassword && <span className="auth-error">{errors.newPassword.message}</span>}
+        </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="auth-form">
-          <div className="auth-field">
-            <label className="auth-label">Nueva contraseña</label>
-            <input
-              type="password"
-              placeholder="********"
-              {...register('newPassword')}
-              className="auth-input"
-            />
-            {errors.newPassword && (
-              <span className="auth-error">{errors.newPassword.message}</span>
-            )}
-          </div>
+        <div className="auth-field">
+          <label className="auth-label">Confirmar contraseña</label>
+          <input
+            type="password"
+            placeholder="********"
+            {...register('confirmPassword')}
+            className="auth-input"
+          />
+          {errors.confirmPassword && <span className="auth-error">{errors.confirmPassword.message}</span>}
+        </div>
 
-          <div className="auth-field">
-            <label className="auth-label">Confirmar contraseña</label>
-            <input
-              type="password"
-              placeholder="********"
-              {...register('confirmPassword')}
-              className="auth-input"
-            />
-            {errors.confirmPassword && (
-              <span className="auth-error">{errors.confirmPassword.message}</span>
-            )}
-          </div>
-
-          <button type="submit" disabled={isSubmitting} className="auth-button">
-            {isSubmitting ? 'Guardando...' : 'Actualizar contraseña'}
-          </button>
-        </form>
-      </div>
-    </div>
+        <button type="submit" disabled={isSubmitting} className="auth-button">
+          {isSubmitting ? 'Guardando...' : 'Actualizar contraseña'}
+        </button>
+      </form>
+    </AuthShell>
   )
 }
 

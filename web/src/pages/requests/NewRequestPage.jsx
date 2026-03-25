@@ -49,7 +49,7 @@ function NewRequestPage() {
     <DashboardLayout>
       <PageHeader
         title="Nueva Solicitud"
-        subtitle="Registra una nueva solicitud de espacio o equipo"
+        subtitle="Completa el formulario para registrar una nueva solicitud"
       />
 
       <div style={cardStyle}>
@@ -61,12 +61,19 @@ function NewRequestPage() {
             {...register('title')}
           />
 
-          <AppInput
-            label="Descripción"
-            placeholder="Describe la solicitud"
-            error={errors.description?.message}
-            {...register('description')}
-          />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+            <label style={{ fontWeight: '600', color: '#022859' }}>Descripción</label>
+            <textarea
+              placeholder="Describe el motivo o contexto de la solicitud"
+              {...register('description')}
+              style={textareaStyle}
+            />
+            {errors.description && (
+              <span style={{ color: '#8B0000', fontSize: '0.85rem' }}>
+                {errors.description.message}
+              </span>
+            )}
+          </div>
 
           <AppButton type="submit" disabled={isSubmitting}>
             {isSubmitting ? 'Guardando...' : 'Enviar solicitud'}
@@ -79,11 +86,23 @@ function NewRequestPage() {
 
 const cardStyle = {
   background: '#FFFFFF',
-  padding: '1.2rem',
-  borderRadius: '14px',
+  padding: '1.3rem',
+  borderRadius: '16px',
   boxShadow: '0 6px 16px rgba(0,0,0,0.06)',
   border: '2px solid #C8E6C9',
-  maxWidth: '700px',
+  maxWidth: '760px',
+}
+
+const textareaStyle = {
+  minHeight: '130px',
+  padding: '0.95rem 1rem',
+  borderRadius: '10px',
+  border: '1px solid #E5E7EB',
+  outline: 'none',
+  background: '#F5F5F5',
+  color: '#022859',
+  resize: 'vertical',
+  font: 'inherit',
 }
 
 export default NewRequestPage

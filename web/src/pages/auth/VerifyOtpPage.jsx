@@ -5,12 +5,10 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Link, useNavigate } from 'react-router-dom'
 import { verifyOtpRequest } from '../../api/authApi'
 import { showToast } from '../../utils/alertUtils'
+import AuthShell from '../../components/auth/AuthShell'
 
 const schema = z.object({
-  code: z
-    .string()
-    .min(6, 'El código debe tener 6 dígitos')
-    .max(6, 'El código debe tener 6 dígitos'),
+  code: z.string().min(6, 'El código debe tener 6 dígitos').max(6, 'El código debe tener 6 dígitos'),
 })
 
 function VerifyOtpPage() {
@@ -51,38 +49,34 @@ function VerifyOtpPage() {
   }
 
   return (
-    <div className="auth-page">
-      <div className="auth-card">
-        <h1 className="auth-title">Verificar código</h1>
-        <p className="auth-subtitle">
-          Ingresa el código de 6 dígitos enviado a tu correo
-        </p>
-
-        <form onSubmit={handleSubmit(onSubmit)} className="auth-form">
-          <div className="auth-field">
-            <label className="auth-label">Código</label>
-            <input
-              type="text"
-              maxLength="6"
-              placeholder="123456"
-              {...register('code')}
-              className="auth-input"
-            />
-            {errors.code && <span className="auth-error">{errors.code.message}</span>}
-          </div>
-
-          <button type="submit" disabled={isSubmitting} className="auth-button">
-            {isSubmitting ? 'Verificando...' : 'Verificar código'}
-          </button>
-        </form>
-
-        <div style={{ marginTop: '1rem', textAlign: 'center' }}>
-          <Link to="/forgot-password" className="auth-link">
-            Reenviar o cambiar correo
-          </Link>
+    <AuthShell
+      title="Verificar código"
+      subtitle="Ingresa el código de 6 dígitos enviado a tu correo."
+    >
+      <form onSubmit={handleSubmit(onSubmit)} className="auth-form">
+        <div className="auth-field">
+          <label className="auth-label">Código</label>
+          <input
+            type="text"
+            maxLength="6"
+            placeholder="123456"
+            {...register('code')}
+            className="auth-input"
+          />
+          {errors.code && <span className="auth-error">{errors.code.message}</span>}
         </div>
+
+        <button type="submit" disabled={isSubmitting} className="auth-button">
+          {isSubmitting ? 'Verificando...' : 'Verificar código'}
+        </button>
+      </form>
+
+      <div className="auth-helper">
+        <Link to="/forgot-password" className="auth-link">
+          Reenviar o cambiar correo
+        </Link>
       </div>
-    </div>
+    </AuthShell>
   )
 }
 
