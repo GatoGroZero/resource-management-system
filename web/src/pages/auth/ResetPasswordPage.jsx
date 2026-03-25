@@ -1,20 +1,19 @@
+import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { resetPasswordRequest } from '../../api/authApi'
 import { showToast } from '../../utils/alertUtils'
-import AppInput from '../../components/common/AppInput'
-import AppButton from '../../components/common/AppButton'
 
 const schema = z
   .object({
     newPassword: z
       .string()
-      .min(8, 'Mínimo 8 caracteres'),
+      .min(8, 'La contraseña debe tener al menos 8 caracteres'),
     confirmPassword: z
       .string()
-      .min(8, 'Confirma tu contraseña'),
+      .min(8, 'La confirmación debe tener al menos 8 caracteres'),
   })
   .refine((data) => data.newPassword === data.confirmPassword, {
     message: 'Las contraseñas no coinciden',
@@ -23,8 +22,14 @@ const schema = z
 
 function ResetPasswordPage() {
   const navigate = useNavigate()
-  const recoveryEmail = sessionStorage.getItem('recoveryEmail')
-  const verifiedOtp = sessionStorage.getItem('verifiedOtp')
+  const email = localStorage.getItem('resetEmail') || ''
+  const code = localStorage.getItem('resetCode') || ''
+
+  useEffect(() => {
+    if (!email || !code) {
+      navigate('/forgot-password')
+    }
+  }, [email, code, navigate])
 
   const {
     register,
@@ -32,23 +37,28 @@ function ResetPasswordPage() {
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(schema),
+    defaultValues: {
+      newPassword: '',
+      confirmPassword: '',
+    },
   })
 
   const onSubmit = async (data) => {
     try {
       await resetPasswordRequest({
-        email: recoveryEmail,
-        code: verifiedOtp,
+        email,
+        code,
         newPassword: data.newPassword,
       })
 
-      sessionStorage.removeItem('recoveryEmail')
-      sessionStorage.removeItem('verifiedOtp')
+      localStorage.removeItem('resetEmail')
+      localStorage.removeItem('resetCode')
 
-      showToast('success', 'Contraseña actualizada')
+      showToast('success', 'Contraseña actualizada correctamente')
       navigate('/login')
     } catch (error) {
-      showToast('error', error?.response?.data?.message || 'No se pudo actualizar la contraseña')
+      const message = error?.response?.data?.message || 'No se pudo actualizar la contraseña'
+      showToast('error', message)
     }
   }
 
@@ -56,33 +66,41 @@ function ResetPasswordPage() {
     <div className="auth-page">
       <div className="auth-card">
         <h1 className="auth-title">Nueva contraseña</h1>
-        <p className="auth-subtitle">Ingresa y confirma tu nueva contraseña</p>
+        <p className="auth-subtitle">
+          Ingresa tu nueva contraseña para completar la recuperación
+        </p>
 
-        <form className="form" onSubmit={handleSubmit(onSubmit)}>
-          <AppInput
-            label="Nueva contraseña"
-            type="password"
-            placeholder="Nueva123*"
-            registration={register('newPassword')}
-            error={errors.newPassword?.message}
-          />
+        <form onSubmit={handleSubmit(onSubmit)} className="auth-form">
+          <div className="auth-field">
+            <label className="auth-label">Nueva contraseña</label>
+            <input
+              type="password"
+              placeholder="********"
+              {...register('newPassword')}
+              className="auth-input"
+            />
+            {errors.newPassword && (
+              <span className="auth-error">{errors.newPassword.message}</span>
+            )}
+          </div>
 
-          <AppInput
-            label="Confirmar contraseña"
-            type="password"
-            placeholder="Nueva123*"
-            registration={register('confirmPassword')}
-            error={errors.confirmPassword?.message}
-          />
+          <div className="auth-field">
+            <label className="auth-label">Confirmar contraseña</label>
+            <input
+              type="password"
+              placeholder="********"
+              {...register('confirmPassword')}
+              className="auth-input"
+            />
+            {errors.confirmPassword && (
+              <span className="auth-error">{errors.confirmPassword.message}</span>
+            )}
+          </div>
 
-          <AppButton type="submit" variant="primary">
+          <button type="submit" disabled={isSubmitting} className="auth-button">
             {isSubmitting ? 'Guardando...' : 'Actualizar contraseña'}
-          </AppButton>
+          </button>
         </form>
-
-        <div className="link-text">
-          <Link to="/login">Volver al login</Link>
-        </div>
       </div>
     </div>
   )

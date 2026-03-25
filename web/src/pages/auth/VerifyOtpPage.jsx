@@ -1,11 +1,10 @@
+import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useNavigate, Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { verifyOtpRequest } from '../../api/authApi'
 import { showToast } from '../../utils/alertUtils'
-import AppInput from '../../components/common/AppInput'
-import AppButton from '../../components/common/AppButton'
 
 const schema = z.object({
   code: z
@@ -16,7 +15,13 @@ const schema = z.object({
 
 function VerifyOtpPage() {
   const navigate = useNavigate()
-  const recoveryEmail = sessionStorage.getItem('recoveryEmail')
+  const email = localStorage.getItem('resetEmail') || ''
+
+  useEffect(() => {
+    if (!email) {
+      navigate('/forgot-password')
+    }
+  }, [email, navigate])
 
   const {
     register,
@@ -24,19 +29,24 @@ function VerifyOtpPage() {
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(schema),
+    defaultValues: {
+      code: '',
+    },
   })
 
   const onSubmit = async (data) => {
     try {
       await verifyOtpRequest({
-        email: recoveryEmail,
+        email,
         code: data.code,
       })
-      sessionStorage.setItem('verifiedOtp', data.code)
-      showToast('success', 'Código válido')
+
+      localStorage.setItem('resetCode', data.code)
+      showToast('success', 'Código verificado correctamente')
       navigate('/reset-password')
     } catch (error) {
-      showToast('error', error?.response?.data?.message || 'Código inválido')
+      const message = error?.response?.data?.message || 'Código inválido'
+      showToast('error', message)
     }
   }
 
@@ -44,23 +54,32 @@ function VerifyOtpPage() {
     <div className="auth-page">
       <div className="auth-card">
         <h1 className="auth-title">Verificar código</h1>
-        <p className="auth-subtitle">Ingresa el NIP de 6 dígitos recibido</p>
+        <p className="auth-subtitle">
+          Ingresa el código de 6 dígitos enviado a tu correo
+        </p>
 
-        <form className="form" onSubmit={handleSubmit(onSubmit)}>
-          <AppInput
-            label="Código OTP"
-            placeholder="123456"
-            registration={register('code')}
-            error={errors.code?.message}
-          />
+        <form onSubmit={handleSubmit(onSubmit)} className="auth-form">
+          <div className="auth-field">
+            <label className="auth-label">Código</label>
+            <input
+              type="text"
+              maxLength="6"
+              placeholder="123456"
+              {...register('code')}
+              className="auth-input"
+            />
+            {errors.code && <span className="auth-error">{errors.code.message}</span>}
+          </div>
 
-          <AppButton type="submit" variant="primary">
+          <button type="submit" disabled={isSubmitting} className="auth-button">
             {isSubmitting ? 'Verificando...' : 'Verificar código'}
-          </AppButton>
+          </button>
         </form>
 
-        <div className="link-text">
-          <Link to="/forgot-password">Volver</Link>
+        <div style={{ marginTop: '1rem', textAlign: 'center' }}>
+          <Link to="/forgot-password" className="auth-link">
+            Reenviar o cambiar correo
+          </Link>
         </div>
       </div>
     </div>

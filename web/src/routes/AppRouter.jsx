@@ -1,6 +1,9 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import ProtectedRoute from './ProtectedRoute'
 import LoginPage from '../pages/auth/LoginPage'
+import ForgotPasswordPage from '../pages/auth/ForgotPasswordPage'
+import VerifyOtpPage from '../pages/auth/VerifyOtpPage'
+import ResetPasswordPage from '../pages/auth/ResetPasswordPage'
 import DashboardPage from '../pages/dashboard/DashboardPage'
 import RequestsPage from '../pages/requests/RequestsPage'
 import NewRequestPage from '../pages/requests/NewRequestPage'
@@ -14,6 +17,9 @@ function AppRouter() {
     <Routes>
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/verify-otp" element={<VerifyOtpPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
 
       <Route element={<ProtectedRoute />}>
         <Route path="/dashboard" element={<DashboardPage />} />

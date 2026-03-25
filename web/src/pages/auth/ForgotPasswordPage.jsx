@@ -1,11 +1,9 @@
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useNavigate, Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { forgotPasswordRequest } from '../../api/authApi'
 import { showToast } from '../../utils/alertUtils'
-import AppInput from '../../components/common/AppInput'
-import AppButton from '../../components/common/AppButton'
 
 const schema = z.object({
   email: z.string().min(1, 'El correo es obligatorio').email('El correo no es válido'),
@@ -20,16 +18,20 @@ function ForgotPasswordPage() {
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(schema),
+    defaultValues: {
+      email: '',
+    },
   })
 
   const onSubmit = async (data) => {
     try {
       await forgotPasswordRequest(data)
-      sessionStorage.setItem('recoveryEmail', data.email)
+      localStorage.setItem('resetEmail', data.email)
       showToast('success', 'Código enviado correctamente')
       navigate('/verify-otp')
     } catch (error) {
-      showToast('error', error?.response?.data?.message || 'No se pudo enviar el código')
+      const message = error?.response?.data?.message || 'No se pudo enviar el código'
+      showToast('error', message)
     }
   }
 
@@ -37,24 +39,31 @@ function ForgotPasswordPage() {
     <div className="auth-page">
       <div className="auth-card">
         <h1 className="auth-title">Recuperar contraseña</h1>
-        <p className="auth-subtitle">Ingresa tu correo para recibir el código OTP</p>
+        <p className="auth-subtitle">
+          Ingresa tu correo para recibir un código de verificación
+        </p>
 
-        <form className="form" onSubmit={handleSubmit(onSubmit)}>
-          <AppInput
-            label="Correo"
-            type="email"
-            placeholder="admin@sgr.com"
-            registration={register('email')}
-            error={errors.email?.message}
-          />
+        <form onSubmit={handleSubmit(onSubmit)} className="auth-form">
+          <div className="auth-field">
+            <label className="auth-label">Correo electrónico</label>
+            <input
+              type="email"
+              placeholder="correo@utez.edu.mx"
+              {...register('email')}
+              className="auth-input"
+            />
+            {errors.email && <span className="auth-error">{errors.email.message}</span>}
+          </div>
 
-          <AppButton type="submit" variant="primary">
+          <button type="submit" disabled={isSubmitting} className="auth-button">
             {isSubmitting ? 'Enviando...' : 'Enviar código'}
-          </AppButton>
+          </button>
         </form>
 
-        <div className="link-text">
-          <Link to="/login">Volver al login</Link>
+        <div style={{ marginTop: '1rem', textAlign: 'center' }}>
+          <Link to="/login" className="auth-link">
+            Volver al inicio de sesión
+          </Link>
         </div>
       </div>
     </div>

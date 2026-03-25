@@ -93,3 +93,8 @@ input {
   color: #8B0000;
   font-size: 0.85rem;
 }
+.auth-link {
+  color: #022859;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
