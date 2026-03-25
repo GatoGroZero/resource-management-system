@@ -1,70 +1,71 @@
 import { NavLink } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 
-const baseLinkStyle = {
-  display: 'block',
-  padding: '0.8rem 1rem',
-  borderRadius: '10px',
-  marginBottom: '0.5rem',
-  fontWeight: '500',
-}
-
-const getLinkStyle = ({ isActive }) => ({
-  ...baseLinkStyle,
-  background: isActive ? '#C8E6C9' : 'transparent',
-  color: isActive ? '#022859' : '#E5E7EB',
-  fontWeight: isActive ? '700' : '500',
-})
-
 function Sidebar() {
   const { user } = useAuth()
   const isAdmin = user?.role === 'ADMIN'
 
   return (
-    <aside
-      style={{
-        width: '250px',
-        background: '#01402E',
-        color: '#FFFFFF',
-        padding: '1.5rem 1rem',
-        minHeight: '100vh',
-      }}
-    >
-      <h2 style={{ marginBottom: '1.5rem', color: '#FFFFFF' }}>SGR</h2>
+    <aside style={sidebarStyle}>
+      <div style={logoStyle}>SGR</div>
 
-      <NavLink to="/dashboard" style={getLinkStyle}>
-        Dashboard
-      </NavLink>
+      <nav style={{ marginTop: '2rem' }}>
+        <NavLink to="/dashboard" style={linkStyle}>
+          Dashboard
+        </NavLink>
 
-      <NavLink to="/requests" end style={getLinkStyle}>
-        Solicitudes
-      </NavLink>
+        <NavLink to="/requests" end style={linkStyle}>
+          Solicitudes
+        </NavLink>
 
-      <NavLink to="/requests/new" style={getLinkStyle}>
-        Nueva Solicitud
-      </NavLink>
+        <NavLink to="/requests/new" style={linkStyle}>
+          Nueva solicitud
+        </NavLink>
 
-      {isAdmin && (
-        <>
-          <NavLink to="/spaces" style={getLinkStyle}>
-            Espacios
-          </NavLink>
+        {isAdmin && (
+          <>
+            <NavLink to="/spaces" style={linkStyle}>
+              Espacios
+            </NavLink>
 
-          <NavLink to="/equipments" style={getLinkStyle}>
-            Equipos
-          </NavLink>
+            <NavLink to="/equipments" style={linkStyle}>
+              Equipos
+            </NavLink>
 
-          <NavLink to="/history" style={getLinkStyle}>
-            Historial
-          </NavLink>
-        </>
-      )}
+            <NavLink to="/history" style={linkStyle}>
+              Historial
+            </NavLink>
+          </>
+        )}
 
-      <NavLink to="/profile" style={getLinkStyle}>
-        Perfil
-      </NavLink>
+        <NavLink to="/profile" style={linkStyle}>
+          Perfil
+        </NavLink>
+      </nav>
     </aside>
   )
 }
+
+const sidebarStyle = {
+  width: '240px',
+  background: '#01402E',
+  color: '#FFFFFF',
+  padding: '1.5rem 1rem',
+}
+
+const logoStyle = {
+  fontSize: '1.4rem',
+  fontWeight: '800',
+}
+
+const linkStyle = ({ isActive }) => ({
+  display: 'block',
+  padding: '0.8rem 1rem',
+  borderRadius: '10px',
+  marginBottom: '0.4rem',
+  color: isActive ? '#01402E' : '#E5E7EB',
+  background: isActive ? '#C8E6C9' : 'transparent',
+  fontWeight: isActive ? '700' : '500',
+})
 
 export default Sidebar

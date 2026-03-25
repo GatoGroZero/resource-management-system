@@ -1,49 +1,44 @@
-import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 
 function Topbar() {
   const { user, logout } = useAuth()
-  const navigate = useNavigate()
-
-  const handleLogout = () => {
-    logout()
-    navigate('/login')
-  }
 
   return (
-    <header
-      style={{
-        background: '#FFFFFF',
-        padding: '1rem 1.5rem',
-        borderBottom: '1px solid #E5E7EB',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-      }}
-    >
+    <header style={topbarStyle}>
       <div>
         <strong style={{ color: '#022859' }}>
           {user?.name} {user?.lastName}
         </strong>
-        <p style={{ color: '#8A9BB8', fontSize: '0.9rem' }}>{user?.email}</p>
+        <div style={{ color: '#8A9BB8', fontSize: '0.9rem' }}>
+          {user?.email}
+        </div>
       </div>
 
-      <button
-        onClick={handleLogout}
-        style={{
-          padding: '0.8rem 1rem',
-          border: 'none',
-          borderRadius: '10px',
-          background: '#01402E',
-          color: '#FFFFFF',
-          cursor: 'pointer',
-          fontWeight: '700',
-        }}
-      >
+      <button onClick={logout} style={buttonStyle}>
         Cerrar sesión
       </button>
     </header>
   )
+}
+
+const topbarStyle = {
+  height: '70px',
+  background: '#FFFFFF',
+  borderBottom: '1px solid #E5E7EB',
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  padding: '0 2rem',
+}
+
+const buttonStyle = {
+  background: '#01402E',
+  color: '#FFFFFF',
+  border: 'none',
+  padding: '0.6rem 1rem',
+  borderRadius: '10px',
+  cursor: 'pointer',
+  fontWeight: '600',
 }
 
 export default Topbar
