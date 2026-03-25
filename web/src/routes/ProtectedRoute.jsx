@@ -3,7 +3,12 @@ import { useAuth } from '../context/AuthContext'
 
 function ProtectedRoute() {
   const { token } = useAuth()
-  return token ? <Outlet /> : <Navigate to="/login" replace />
+
+  if (!token) {
+    return <Navigate to="/login" replace />
+  }
+
+  return <Outlet />
 }
 
 export default ProtectedRoute
