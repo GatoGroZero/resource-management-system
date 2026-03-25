@@ -21,11 +21,11 @@ public class DataInitializer {
     @Bean
     public CommandLineRunner initUsers() {
         return args -> {
-            if (!userRepository.existsByEmail("admin@sgr.com")) {
+            if (!userRepository.existsByEmail("castelar999@gmail.com")) {
                 userRepository.save(User.builder()
                         .name("Admin")
                         .lastName("Principal")
-                        .email("admin@sgr.com")
+                        .email("castelar999@gmail.com")
                         .password(passwordEncoder.encode("Admin123*"))
                         .role(Role.ADMIN)
                         .active(true)
