@@ -6,10 +6,10 @@ function Topbar() {
   return (
     <header style={topbarStyle}>
       <div>
-        <strong style={{ color: '#022859' }}>
+        <strong style={{ color: '#022859', fontSize: '1rem' }}>
           {user?.name} {user?.lastName}
         </strong>
-        <div style={{ color: '#8A9BB8', fontSize: '0.9rem' }}>
+        <div style={{ color: '#8A9BB8', fontSize: '0.9rem', marginTop: '0.2rem' }}>
           {user?.email}
         </div>
       </div>
@@ -22,7 +22,7 @@ function Topbar() {
 }
 
 const topbarStyle = {
-  height: '70px',
+  height: '76px',
   background: '#FFFFFF',
   borderBottom: '1px solid #E5E7EB',
   display: 'flex',
@@ -35,10 +35,10 @@ const buttonStyle = {
   background: '#01402E',
   color: '#FFFFFF',
   border: 'none',
-  padding: '0.6rem 1rem',
-  borderRadius: '10px',
+  padding: '0.7rem 1.1rem',
+  borderRadius: '12px',
   cursor: 'pointer',
-  fontWeight: '600',
+  fontWeight: '700',
 }
 
 export default Topbar
