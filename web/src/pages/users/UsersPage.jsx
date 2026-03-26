@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import DashboardLayout from '../../components/layout/DashboardLayout'
-import PageHeader from '../../components/common/PageHeader'
-import AppCard from '../../components/common/AppCard'
+import CreateUserModal from './CreateUserModal'
 import { getUsers } from '../../api/userApi'
 import { showToast } from '../../utils/alertUtils'
 
@@ -10,6 +9,7 @@ function UsersPage() {
   const [page, setPage] = useState(0)
   const [searchInput, setSearchInput] = useState('')
   const [activeFilter, setActiveFilter] = useState('')
+  const [openModal, setOpenModal] = useState(false)
 
   const fetchUsers = async (customPage = page, customFilter = activeFilter, customSearch = '') => {
     try {
@@ -51,13 +51,18 @@ function UsersPage() {
 
   return (
     <DashboardLayout>
-      <PageHeader
-        title="Gestión de Usuarios"
-        subtitle="Administra los usuarios del sistema"
-      />
+      <div style={headerRowStyle}>
+        <div>
+          <h1 style={titleStyle}>Gestión de Usuarios</h1>
+        </div>
 
-      <AppCard style={{ padding: '1.5rem' }}>
-        <div style={searchRow}>
+        <button type="button" onClick={() => setOpenModal(true)} style={addButtonStyle}>
+          ＋ Agregar Usuario
+        </button>
+      </div>
+
+      <div style={toolbarStyle}>
+        <div style={searchWrapStyle}>
           <input
             type="text"
             placeholder="Buscar por nombre o matrícula/ID"
@@ -65,76 +70,83 @@ function UsersPage() {
             onChange={(e) => setSearchInput(e.target.value)}
             style={searchInputStyle}
           />
-
-          <button onClick={handleSearch} style={searchButtonStyle}>
-            Buscar
-          </button>
-
-          <button style={addButtonStyle}>
-            Agregar Usuario
-          </button>
         </div>
 
-        <div style={filtersRow}>
-          <button style={chipStyle(activeFilter === 'STUDENTS')} onClick={() => handleFilter('STUDENTS')}>
-            Estudiantes
-          </button>
-          <button style={chipStyle(activeFilter === 'STAFF')} onClick={() => handleFilter('STAFF')}>
-            Personal
-          </button>
-          <button style={chipStyle(activeFilter === 'ACTIVE')} onClick={() => handleFilter('ACTIVE')}>
-            Estado: Activo
-          </button>
-          <button style={chipStyle(activeFilter === 'INACTIVE')} onClick={() => handleFilter('INACTIVE')}>
-            Estado: Inactivo
-          </button>
-        </div>
+        <button type="button" onClick={handleSearch} style={searchButtonStyle}>
+          Buscar
+        </button>
+      </div>
 
-        <div style={{ overflowX: 'auto' }}>
-          <table style={tableStyle}>
-            <thead>
-              <tr>
-                <th style={thStyle}>Nombre</th>
-                <th style={thStyle}>Correo</th>
-                <th style={thStyle}>Matrícula/ID</th>
-                <th style={thStyle}>Rol</th>
-                <th style={thStyle}>Estado</th>
-                <th style={thStyle}>Acciones</th>
+      <div style={filtersRowStyle}>
+        <button type="button" onClick={() => handleFilter('STUDENTS')} style={chipStyle(activeFilter === 'STUDENTS')}>
+          Estudiantes
+        </button>
+        <button type="button" onClick={() => handleFilter('STAFF')} style={chipStyle(activeFilter === 'STAFF')}>
+          Personal
+        </button>
+        <button type="button" onClick={() => handleFilter('ACTIVE')} style={chipStyle(activeFilter === 'ACTIVE')}>
+          Estado: Activo
+        </button>
+        <button type="button" onClick={() => handleFilter('INACTIVE')} style={chipStyle(activeFilter === 'INACTIVE')}>
+          Estado: Inactivo
+        </button>
+      </div>
+
+      <div style={tableCardStyle}>
+        <table style={tableStyle}>
+          <thead>
+            <tr>
+              <th style={thStyle}>Nombre</th>
+              <th style={thStyle}>Correo</th>
+              <th style={thStyle}>Matrícula/ID</th>
+              <th style={thStyle}>Rol</th>
+              <th style={thStyle}>Estado</th>
+              <th style={thStyle}>Acciones</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {usersPage?.content?.map((user) => (
+              <tr key={user.id}>
+                <td style={tdNameStyle}>{user.fullName}</td>
+                <td style={tdMutedStyle}>{user.email}</td>
+                <td style={tdMutedStyle}>{user.identifier || '—'}</td>
+                <td style={tdMutedStyle}>{formatRole(user.role)}</td>
+                <td style={tdStyle}>
+                  <span style={statusStyle(user.active)}>
+                    {user.active ? 'Activo' : 'Inactivo'}
+                  </span>
+                </td>
+                <td style={tdStyle}>
+                  <div style={actionsIconsStyle}>👁 ✏ ⏻</div>
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {usersPage?.content?.map((user) => (
-                <tr key={user.id}>
-                  <td style={tdStyle}>{user.fullName}</td>
-                  <td style={tdStyle}>{user.email}</td>
-                  <td style={tdStyle}>{user.identifier || '—'}</td>
-                  <td style={tdStyle}>{formatRole(user.role)}</td>
-                  <td style={tdStyle}>
-                    <span style={statusStyle(user.active)}>
-                      {user.active ? 'Activo' : 'Inactivo'}
-                    </span>
-                  </td>
-                  <td style={tdStyle}>👁 ✏ ⏻</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            ))}
+          </tbody>
+        </table>
 
-        <div style={paginationRow}>
-          <button onClick={handlePrev} disabled={page === 0} style={pageButtonStyle}>
-            ‹
-          </button>
-
-          <span style={{ color: '#8A9BB8' }}>
-            Página {usersPage ? usersPage.number + 1 : 1} de {usersPage ? usersPage.totalPages : 1}
+        <div style={footerRowStyle}>
+          <span style={pageTextStyle}>
+            Página {usersPage ? usersPage.number + 1 : 1} de {usersPage ? Math.max(usersPage.totalPages, 1) : 1}
           </span>
 
-          <button onClick={handleNext} disabled={usersPage?.last} style={pageButtonStyle}>
-            ›
-          </button>
+          <div style={pagerButtonsStyle}>
+            <button type="button" onClick={handlePrev} disabled={page === 0} style={pagerButtonStyle}>
+              ‹
+            </button>
+            <button type="button" onClick={handleNext} disabled={usersPage?.last} style={pagerButtonStyle}>
+              ›
+            </button>
+          </div>
         </div>
-      </AppCard>
+      </div>
+
+      {openModal && (
+        <CreateUserModal
+          onClose={() => setOpenModal(false)}
+          onSuccess={() => fetchUsers()}
+        />
+      )}
     </DashboardLayout>
   )
 }
@@ -145,57 +157,85 @@ function formatRole(role) {
   return 'Estudiante'
 }
 
-const searchRow = {
-  display: 'grid',
-  gridTemplateColumns: '1fr auto auto',
-  gap: '0.75rem',
-  marginBottom: '1rem',
+const headerRowStyle = {
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  marginBottom: '18px',
 }
 
-const searchInputStyle = {
-  padding: '0.9rem 1rem',
-  borderRadius: '12px',
-  border: '1px solid #E5E7EB',
-  background: '#F5F7FA',
-  color: '#022859',
-}
-
-const searchButtonStyle = {
-  border: 'none',
-  borderRadius: '12px',
-  padding: '0.9rem 1rem',
-  background: '#D1D9E6',
-  color: '#022859',
-  fontWeight: '700',
-  cursor: 'pointer',
+const titleStyle = {
+  fontSize: '22px',
+  fontWeight: 700,
+  color: '#0b2f63',
 }
 
 const addButtonStyle = {
   border: 'none',
-  borderRadius: '12px',
-  padding: '0.9rem 1rem',
-  background: '#C8E6C9',
-  color: '#01402E',
-  fontWeight: '700',
+  background: '#c9f0cf',
+  color: '#006c2f',
+  padding: '12px 16px',
+  borderRadius: '10px',
+  fontWeight: 700,
   cursor: 'pointer',
 }
 
-const filtersRow = {
+const toolbarStyle = {
+  display: 'grid',
+  gridTemplateColumns: '1fr auto',
+  gap: '12px',
+  marginBottom: '14px',
+}
+
+const searchWrapStyle = {
+  background: '#f8fafc',
+  border: '1px solid #e5e7eb',
+  borderRadius: '10px',
+  overflow: 'hidden',
+}
+
+const searchInputStyle = {
+  width: '100%',
+  border: 'none',
+  background: 'transparent',
+  padding: '12px 14px',
+  outline: 'none',
+  color: '#111827',
+}
+
+const searchButtonStyle = {
+  border: 'none',
+  background: '#e2e8f0',
+  color: '#0b2f63',
+  padding: '12px 16px',
+  borderRadius: '10px',
+  fontWeight: 700,
+  cursor: 'pointer',
+}
+
+const filtersRowStyle = {
   display: 'flex',
-  gap: '0.75rem',
+  gap: '10px',
   flexWrap: 'wrap',
-  marginBottom: '1.2rem',
+  marginBottom: '12px',
 }
 
 const chipStyle = (active) => ({
   border: 'none',
+  background: active ? '#e8f5e9' : '#f3f4f6',
+  color: active ? '#166534' : '#94a3b8',
+  padding: '10px 14px',
   borderRadius: '10px',
-  padding: '0.7rem 1rem',
-  background: active ? '#C8E6C9' : '#F3F4F6',
-  color: active ? '#01402E' : '#8A9BB8',
-  fontWeight: '600',
+  fontWeight: 600,
   cursor: 'pointer',
 })
+
+const tableCardStyle = {
+  background: '#ffffff',
+  border: '1px solid #e5e7eb',
+  borderRadius: '16px',
+  overflow: 'hidden',
+}
 
 const tableStyle = {
   width: '100%',
@@ -204,46 +244,73 @@ const tableStyle = {
 
 const thStyle = {
   textAlign: 'left',
-  padding: '1rem 0.8rem',
-  borderBottom: '1px solid #E5E7EB',
-  color: '#022859',
-  fontSize: '0.95rem',
+  padding: '16px 18px',
+  background: '#f8fafc',
+  borderBottom: '1px solid #e5e7eb',
+  color: '#64748b',
+  fontSize: '13px',
+  fontWeight: 700,
+  textTransform: 'uppercase',
 }
 
 const tdStyle = {
-  padding: '1rem 0.8rem',
-  borderBottom: '1px solid #EEF2F7',
-  color: '#022859',
-  fontSize: '0.95rem',
+  padding: '16px 18px',
+  borderBottom: '1px solid #eef2f7',
+  color: '#0f172a',
+  fontSize: '14px',
+}
+
+const tdNameStyle = {
+  ...tdStyle,
+  color: '#0b2f63',
+  fontWeight: 700,
+}
+
+const tdMutedStyle = {
+  ...tdStyle,
+  color: '#94a3b8',
 }
 
 const statusStyle = (active) => ({
-  background: active ? '#C8E6C9' : '#FFE5CC',
-  color: active ? '#01402E' : '#8B4500',
-  padding: '0.25rem 0.65rem',
+  background: active ? '#dcfce7' : '#fee2e2',
+  color: active ? '#15803d' : '#dc2626',
+  padding: '4px 10px',
   borderRadius: '999px',
-  fontSize: '0.8rem',
-  fontWeight: '700',
+  fontSize: '12px',
+  fontWeight: 700,
 })
 
-const paginationRow = {
-  marginTop: '1.25rem',
+const actionsIconsStyle = {
   display: 'flex',
-  justifyContent: 'center',
-  alignItems: 'center',
-  gap: '1rem',
+  gap: '12px',
+  color: '#94a3b8',
 }
 
-const pageButtonStyle = {
-  border: 'none',
-  background: '#F3F4F6',
-  color: '#022859',
-  width: '40px',
-  height: '40px',
+const footerRowStyle = {
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  padding: '16px 18px',
+}
+
+const pageTextStyle = {
+  color: '#64748b',
+  fontSize: '14px',
+}
+
+const pagerButtonsStyle = {
+  display: 'flex',
+  gap: '8px',
+}
+
+const pagerButtonStyle = {
+  width: '36px',
+  height: '36px',
+  border: '1px solid #e5e7eb',
+  background: '#f8fafc',
   borderRadius: '10px',
+  color: '#64748b',
   cursor: 'pointer',
-  fontSize: '1.1rem',
-  fontWeight: '700',
 }
 
 export default UsersPage

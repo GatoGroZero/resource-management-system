@@ -5,73 +5,85 @@ function Sidebar() {
   const { user } = useAuth()
   const isAdmin = user?.role === 'ADMIN'
 
+  const adminItems = [
+    { label: 'Usuarios', to: '/users' },
+    { label: 'Espacios', to: '/infrastructure' },
+    { label: 'Inventario', to: '/inventory' },
+    { label: 'Reservas', to: '/reservations' },
+    { label: 'Auditoría', to: '/audit' },
+  ]
+
+  const applicantItems = [
+    { label: 'Portal', to: '/portal' },
+    { label: 'Nueva Solicitud', to: '/new-request' },
+    { label: 'Mi Historial', to: '/request-history' },
+  ]
+
+  const items = isAdmin ? adminItems : applicantItems
+
   return (
     <aside style={sidebarStyle}>
-      <div style={logoStyle}>SGR</div>
+      <div style={brandRowStyle}>
+        <div style={logoBoxStyle}></div>
+        <div style={brandTextStyle}>DIGITAL CORE</div>
+      </div>
 
-      <nav style={{ marginTop: '2rem' }}>
-        <NavLink to="/dashboard" style={linkStyle}>
-          Inicio
-        </NavLink>
-
-        {isAdmin && (
-          <NavLink to="/users" style={linkStyle}>
-            Gestión de Usuarios
+      <nav style={navStyle}>
+        {items.map((item) => (
+          <NavLink key={item.to} to={item.to} style={getLinkStyle}>
+            {item.label}
           </NavLink>
-        )}
-
-        <NavLink to="/requests" end style={linkStyle}>
-          Gestión de Solicitudes
-        </NavLink>
-
-        <NavLink to="/requests/new" style={linkStyle}>
-          Nueva Solicitud
-        </NavLink>
-
-        {isAdmin && (
-          <>
-            <NavLink to="/spaces" style={linkStyle}>
-              Gestión de Espacios
-            </NavLink>
-
-            <NavLink to="/equipments" style={linkStyle}>
-              Gestión de Equipos
-            </NavLink>
-
-            <NavLink to="/history" style={linkStyle}>
-              Historial
-            </NavLink>
-          </>
-        )}
-
-        <NavLink to="/profile" style={linkStyle}>
-          Perfil
-        </NavLink>
+        ))}
       </nav>
     </aside>
   )
 }
 
 const sidebarStyle = {
-  width: '240px',
-  background: '#01402E',
-  color: '#FFFFFF',
-  padding: '1.5rem 1rem',
+  width: '204px',
+  background: '#008A3A',
+  color: '#ffffff',
+  padding: '18px 12px',
+  display: 'flex',
+  flexDirection: 'column',
+  flexShrink: 0,
 }
 
-const logoStyle = {
-  fontSize: '1.4rem',
-  fontWeight: '800',
+const brandRowStyle = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: '10px',
+  marginBottom: '28px',
+  padding: '0 10px',
 }
 
-const linkStyle = ({ isActive }) => ({
-  display: 'block',
-  padding: '0.8rem 1rem',
+const logoBoxStyle = {
+  width: '32px',
+  height: '32px',
+  borderRadius: '8px',
+  background: '#f8fafc',
+  border: '1px solid rgba(255,255,255,0.35)',
+}
+
+const brandTextStyle = {
+  fontSize: '14px',
+  fontWeight: 800,
+  letterSpacing: '0.2px',
+}
+
+const navStyle = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '6px',
+}
+
+const getLinkStyle = ({ isActive }) => ({
+  padding: '12px 14px',
   borderRadius: '10px',
-  marginBottom: '0.4rem',
-  color: isActive ? '#01402E' : '#E5E7EB',
-  background: isActive ? '#C8E6C9' : 'transparent',
-  fontWeight: isActive ? '700' : '500',
+  color: '#eafff1',
+  background: isActive ? 'rgba(255,255,255,0.14)' : 'transparent',
+  fontSize: '14px',
+  fontWeight: isActive ? 700 : 500,
 })
 
 export default Sidebar

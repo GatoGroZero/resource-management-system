@@ -9,3 +9,8 @@ export async function getUsers({ page = 0, size = 10, filter = '', search = '' }
   const response = await axiosClient.get('/api/users', { params })
   return response.data
 }
+
+export async function createUser(data) {
+  const response = await axiosClient.post('/api/users', data)
+  return response.data
+}

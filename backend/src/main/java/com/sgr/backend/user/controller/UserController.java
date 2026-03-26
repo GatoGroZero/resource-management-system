@@ -1,5 +1,6 @@
 package com.sgr.backend.user.controller;
 
+import com.sgr.backend.user.dto.CreateUserRequest;
 import com.sgr.backend.user.dto.UserListItemResponse;
 import com.sgr.backend.user.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -23,5 +24,11 @@ public class UserController {
             @RequestParam(required = false) String search
     ) {
         return ResponseEntity.ok(userService.getUsers(page, size, filter, search));
+    }
+
+    @PostMapping
+    public ResponseEntity<?> createUser(@RequestBody CreateUserRequest request) {
+        userService.createUser(request);
+        return ResponseEntity.ok().build();
     }
 }

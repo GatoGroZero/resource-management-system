@@ -4,6 +4,7 @@ import com.sgr.backend.common.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -34,6 +35,12 @@ public class User {
     private Role role;
 
     private Boolean active;
+
+    private LocalDate birthDate;
+
+    private String userType;
+
+    private String phone;
 
     private LocalDateTime createdAt;
 }
