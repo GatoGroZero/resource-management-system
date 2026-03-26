@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
 import DashboardLayout from '../../components/layout/DashboardLayout'
 import CreateUserModal from './CreateUserModal'
-import { getUsers } from '../../api/userApi'
+import ViewUserModal from './ViewUserModal'
+import EditUserModal from './EditUserModal'
+import { getUserById, getUsers, toggleUserStatus } from '../../api/userApi'
 import { showToast } from '../../utils/alertUtils'
 
 function UsersPage() {
@@ -9,7 +11,10 @@ function UsersPage() {
   const [page, setPage] = useState(0)
   const [searchInput, setSearchInput] = useState('')
   const [activeFilter, setActiveFilter] = useState('')
-  const [openModal, setOpenModal] = useState(false)
+  const [openCreateModal, setOpenCreateModal] = useState(false)
+  const [selectedUser, setSelectedUser] = useState(null)
+  const [openViewModal, setOpenViewModal] = useState(false)
+  const [openEditModal, setOpenEditModal] = useState(false)
 
   const fetchUsers = async (customPage = page, customFilter = activeFilter, customSearch = '') => {
     try {
@@ -21,7 +26,7 @@ function UsersPage() {
       })
       setUsersPage(data)
     } catch {
-      showToast('error', 'No se pudieron cargar los usuarios')
+      showToast('error', 'Datos inválidos')
     }
   }
 
@@ -49,6 +54,36 @@ function UsersPage() {
     if (usersPage && !usersPage.last) setPage(page + 1)
   }
 
+  const handleView = async (id) => {
+    try {
+      const data = await getUserById(id)
+      setSelectedUser(data)
+      setOpenViewModal(true)
+    } catch {
+      showToast('error', 'Datos inválidos')
+    }
+  }
+
+  const handleEdit = async (id) => {
+    try {
+      const data = await getUserById(id)
+      setSelectedUser(data)
+      setOpenEditModal(true)
+    } catch {
+      showToast('error', 'Datos inválidos')
+    }
+  }
+
+  const handleToggleStatus = async (id) => {
+    try {
+      await toggleUserStatus(id)
+      showToast('success', 'Estado actualizado correctamente')
+      fetchUsers()
+    } catch {
+      showToast('error', 'Datos inválidos')
+    }
+  }
+
   return (
     <DashboardLayout>
       <div style={headerRowStyle}>
@@ -56,21 +91,19 @@ function UsersPage() {
           <h1 style={titleStyle}>Gestión de Usuarios</h1>
         </div>
 
-        <button type="button" onClick={() => setOpenModal(true)} style={addButtonStyle}>
-          ＋ Agregar Usuario
+        <button type="button" onClick={() => setOpenCreateModal(true)} style={addButtonStyle}>
+          + Agregar Usuario
         </button>
       </div>
 
       <div style={toolbarStyle}>
-        <div style={searchWrapStyle}>
-          <input
-            type="text"
-            placeholder="Buscar por nombre o matrícula/ID"
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            style={searchInputStyle}
-          />
-        </div>
+        <input
+          type="text"
+          placeholder="Buscar por nombre o matrícula/ID"
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+          style={searchInputStyle}
+        />
 
         <button type="button" onClick={handleSearch} style={searchButtonStyle}>
           Buscar
@@ -85,10 +118,10 @@ function UsersPage() {
           Personal
         </button>
         <button type="button" onClick={() => handleFilter('ACTIVE')} style={chipStyle(activeFilter === 'ACTIVE')}>
-          Estado: Activo
+          Activos
         </button>
         <button type="button" onClick={() => handleFilter('INACTIVE')} style={chipStyle(activeFilter === 'INACTIVE')}>
-          Estado: Inactivo
+          Inactivos
         </button>
       </div>
 
@@ -106,8 +139,8 @@ function UsersPage() {
           </thead>
 
           <tbody>
-            {usersPage?.content?.map((user) => (
-              <tr key={user.id}>
+            {usersPage?.content?.map((user, index) => (
+              <tr key={user.id} style={index % 2 === 0 ? rowEvenStyle : rowOddStyle}>
                 <td style={tdNameStyle}>{user.fullName}</td>
                 <td style={tdMutedStyle}>{user.email}</td>
                 <td style={tdMutedStyle}>{user.identifier || '—'}</td>
@@ -118,7 +151,34 @@ function UsersPage() {
                   </span>
                 </td>
                 <td style={tdStyle}>
-                  <div style={actionsIconsStyle}>👁 ✏ ⏻</div>
+                  <div style={actionsIconsStyle}>
+                    <button
+                      type="button"
+                      onClick={() => handleView(user.id)}
+                      style={viewButtonStyle}
+                      title="Ver"
+                    >
+                      👁
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleEdit(user.id)}
+                      style={editButtonStyle}
+                      title="Editar"
+                    >
+                      ✏
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleToggleStatus(user.id)}
+                      style={toggleButtonStyle(user.active)}
+                      title={user.active ? 'Desactivar' : 'Activar'}
+                    >
+                      ⏻
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -131,19 +191,44 @@ function UsersPage() {
           </span>
 
           <div style={pagerButtonsStyle}>
-            <button type="button" onClick={handlePrev} disabled={page === 0} style={pagerButtonStyle}>
+            <button
+              type="button"
+              onClick={handlePrev}
+              disabled={page === 0}
+              style={pagerButtonStyle(page === 0)}
+            >
               ‹
             </button>
-            <button type="button" onClick={handleNext} disabled={usersPage?.last} style={pagerButtonStyle}>
+            <button
+              type="button"
+              onClick={handleNext}
+              disabled={usersPage?.last}
+              style={pagerButtonStyle(Boolean(usersPage?.last))}
+            >
               ›
             </button>
           </div>
         </div>
       </div>
 
-      {openModal && (
+      {openCreateModal && (
         <CreateUserModal
-          onClose={() => setOpenModal(false)}
+          onClose={() => setOpenCreateModal(false)}
+          onSuccess={() => fetchUsers()}
+        />
+      )}
+
+      {openViewModal && (
+        <ViewUserModal
+          user={selectedUser}
+          onClose={() => setOpenViewModal(false)}
+        />
+      )}
+
+      {openEditModal && (
+        <EditUserModal
+          user={selectedUser}
+          onClose={() => setOpenEditModal(false)}
           onSuccess={() => fetchUsers()}
         />
       )}
@@ -153,8 +238,8 @@ function UsersPage() {
 
 function formatRole(role) {
   if (role === 'ADMIN') return 'Administrador'
-  if (role === 'STAFF') return 'Personal Académico'
-  return 'Estudiante'
+  if (role === 'STAFF') return 'Personal'
+  return 'Solicitante'
 }
 
 const headerRowStyle = {
@@ -166,18 +251,19 @@ const headerRowStyle = {
 
 const titleStyle = {
   fontSize: '22px',
-  fontWeight: 700,
+  fontWeight: 800,
   color: '#0b2f63',
 }
 
 const addButtonStyle = {
   border: 'none',
-  background: '#c9f0cf',
-  color: '#006c2f',
-  padding: '12px 16px',
-  borderRadius: '10px',
+  background: '#00843D',
+  color: '#ffffff',
+  padding: '12px 18px',
+  borderRadius: '12px',
   fontWeight: 700,
   cursor: 'pointer',
+  boxShadow: '0 4px 10px rgba(0,132,61,0.18)',
 }
 
 const toolbarStyle = {
@@ -187,54 +273,53 @@ const toolbarStyle = {
   marginBottom: '14px',
 }
 
-const searchWrapStyle = {
-  background: '#f8fafc',
-  border: '1px solid #e5e7eb',
-  borderRadius: '10px',
-  overflow: 'hidden',
-}
-
 const searchInputStyle = {
   width: '100%',
-  border: 'none',
-  background: 'transparent',
+  border: '1px solid #d7dde5',
+  background: '#ffffff',
+  borderRadius: '12px',
   padding: '12px 14px',
   outline: 'none',
-  color: '#111827',
+  color: '#334155',
+  fontSize: '14px',
 }
 
 const searchButtonStyle = {
   border: 'none',
-  background: '#e2e8f0',
-  color: '#0b2f63',
-  padding: '12px 16px',
-  borderRadius: '10px',
+  background: '#0b5fa5',
+  color: '#ffffff',
+  padding: '12px 18px',
+  borderRadius: '12px',
   fontWeight: 700,
   cursor: 'pointer',
+  boxShadow: '0 4px 10px rgba(11,95,165,0.18)',
 }
 
 const filtersRowStyle = {
   display: 'flex',
   gap: '10px',
   flexWrap: 'wrap',
-  marginBottom: '12px',
+  marginBottom: '14px',
 }
 
 const chipStyle = (active) => ({
-  border: 'none',
-  background: active ? '#e8f5e9' : '#f3f4f6',
-  color: active ? '#166534' : '#94a3b8',
-  padding: '10px 14px',
+  border: '1px solid',
+  borderColor: active ? '#b7dfc0' : '#e2e8f0',
+  background: active ? '#e8f5e9' : '#f8fafc',
+  color: active ? '#166534' : '#475569',
+  padding: '9px 14px',
   borderRadius: '10px',
   fontWeight: 600,
   cursor: 'pointer',
+  transition: 'all 0.2s ease',
 })
 
 const tableCardStyle = {
   background: '#ffffff',
-  border: '1px solid #e5e7eb',
+  border: '1px solid #dfe6ee',
   borderRadius: '16px',
   overflow: 'hidden',
+  boxShadow: '0 4px 16px rgba(15,23,42,0.04)',
 }
 
 const tableStyle = {
@@ -249,8 +334,17 @@ const thStyle = {
   borderBottom: '1px solid #e5e7eb',
   color: '#64748b',
   fontSize: '13px',
-  fontWeight: 700,
+  fontWeight: 800,
   textTransform: 'uppercase',
+  letterSpacing: '0.2px',
+}
+
+const rowEvenStyle = {
+  background: '#ffffff',
+}
+
+const rowOddStyle = {
+  background: '#fcfdff',
 }
 
 const tdStyle = {
@@ -258,6 +352,7 @@ const tdStyle = {
   borderBottom: '1px solid #eef2f7',
   color: '#0f172a',
   fontSize: '14px',
+  verticalAlign: 'middle',
 }
 
 const tdNameStyle = {
@@ -268,34 +363,70 @@ const tdNameStyle = {
 
 const tdMutedStyle = {
   ...tdStyle,
-  color: '#94a3b8',
+  color: '#64748b',
 }
 
 const statusStyle = (active) => ({
   background: active ? '#dcfce7' : '#fee2e2',
   color: active ? '#15803d' : '#dc2626',
-  padding: '4px 10px',
+  padding: '5px 11px',
   borderRadius: '999px',
   fontSize: '12px',
   fontWeight: 700,
+  display: 'inline-block',
 })
 
 const actionsIconsStyle = {
   display: 'flex',
-  gap: '12px',
-  color: '#94a3b8',
+  gap: '8px',
+  alignItems: 'center',
 }
+
+const baseIconButtonStyle = {
+  width: '34px',
+  height: '34px',
+  borderRadius: '10px',
+  border: '1px solid transparent',
+  cursor: 'pointer',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  fontSize: '14px',
+}
+
+const viewButtonStyle = {
+  ...baseIconButtonStyle,
+  background: '#eef6ff',
+  color: '#2563eb',
+  borderColor: '#bfdbfe',
+}
+
+const editButtonStyle = {
+  ...baseIconButtonStyle,
+  background: '#f5f3ff',
+  color: '#7c3aed',
+  borderColor: '#ddd6fe',
+}
+
+const toggleButtonStyle = (active) => ({
+  ...baseIconButtonStyle,
+  background: active ? '#fef2f2' : '#ecfdf3',
+  color: active ? '#dc2626' : '#16a34a',
+  borderColor: active ? '#fecaca' : '#bbf7d0',
+})
 
 const footerRowStyle = {
   display: 'flex',
   justifyContent: 'space-between',
   alignItems: 'center',
   padding: '16px 18px',
+  background: '#ffffff',
 }
 
 const pageTextStyle = {
   color: '#64748b',
   fontSize: '14px',
+  fontWeight: 500,
 }
 
 const pagerButtonsStyle = {
@@ -303,14 +434,15 @@ const pagerButtonsStyle = {
   gap: '8px',
 }
 
-const pagerButtonStyle = {
+const pagerButtonStyle = (disabled) => ({
   width: '36px',
   height: '36px',
   border: '1px solid #e5e7eb',
-  background: '#f8fafc',
+  background: disabled ? '#f8fafc' : '#ffffff',
   borderRadius: '10px',
-  color: '#64748b',
-  cursor: 'pointer',
-}
+  color: disabled ? '#cbd5e1' : '#475569',
+  cursor: disabled ? 'not-allowed' : 'pointer',
+  fontWeight: 700,
+})
 
 export default UsersPage

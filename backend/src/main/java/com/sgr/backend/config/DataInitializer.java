@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Configuration
@@ -22,15 +23,18 @@ public class DataInitializer {
     public CommandLineRunner initUsers() {
         return args -> {
 
-            if (!userRepository.existsByEmail("20243ds003@gmail.com")) {
+            if (!userRepository.existsByEmail("20243ds003@utez.edu.mx")) {
                 userRepository.save(User.builder()
-                        .name("Carlos")
-                        .lastName("Admin Control")
-                        .email("20243ds003@gmail.com")
-                        .identifier("ADM-2026-001")
+                        .name("Admin")
+                        .lastName("Principal")
+                        .email("20243ds003@utez.edu.mx")
+                        .identifier("20243ds003")
                         .password(passwordEncoder.encode("12345678"))
                         .role(Role.ADMIN)
                         .active(true)
+                        .birthDate(LocalDate.of(2000, 1, 1))
+                        .userType("Administrativo")
+                        .phone("7770000000")
                         .createdAt(LocalDateTime.now())
                         .build());
             }
@@ -44,6 +48,9 @@ public class DataInitializer {
                         .password(passwordEncoder.encode("12345678"))
                         .role(Role.STUDENT)
                         .active(true)
+                        .birthDate(LocalDate.of(2003, 5, 10))
+                        .userType("Estudiante")
+                        .phone("7771234567")
                         .createdAt(LocalDateTime.now())
                         .build());
             }
@@ -54,35 +61,12 @@ public class DataInitializer {
                         .lastName("Pérez García")
                         .email("personal@sgr.com")
                         .identifier("EMP-2026-001")
-                        .password(passwordEncoder.encode("Personal123*"))
+                        .password(passwordEncoder.encode("12345678"))
                         .role(Role.STAFF)
                         .active(true)
-                        .createdAt(LocalDateTime.now())
-                        .build());
-            }
-
-            if (!userRepository.existsByEmail("ana.inactiva@sgr.com")) {
-                userRepository.save(User.builder()
-                        .name("Ana")
-                        .lastName("Martínez Sánchez")
-                        .email("ana.inactiva@sgr.com")
-                        .identifier("20233TI002")
-                        .password(passwordEncoder.encode("12345678"))
-                        .role(Role.STUDENT)
-                        .active(false)
-                        .createdAt(LocalDateTime.now())
-                        .build());
-            }
-
-            if (!userRepository.existsByEmail("roberto@sgr.com")) {
-                userRepository.save(User.builder()
-                        .name("Roberto")
-                        .lastName("Flores Díaz")
-                        .email("roberto@sgr.com")
-                        .identifier("20233TI003")
-                        .password(passwordEncoder.encode("12345678"))
-                        .role(Role.STUDENT)
-                        .active(true)
+                        .birthDate(LocalDate.of(1995, 8, 15))
+                        .userType("Personal Académico")
+                        .phone("7777654321")
                         .createdAt(LocalDateTime.now())
                         .build());
             }

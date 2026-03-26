@@ -1,39 +1,45 @@
 import { useEffect, useState } from 'react'
-import { createUser } from '../../api/userApi'
+import { updateUser } from '../../api/userApi'
 import { showToast } from '../../utils/alertUtils'
 
-function CreateUserModal({ onClose, onSuccess }) {
-  const [form, setForm] = useState({
-    name: '',
-    lastName: '',
-    birthDate: '',
-    roleSelection: '',
-    userType: '',
-    identifier: '',
-    email: '',
-    phone: '',
-    password: '',
-    active: true,
-  })
-
+function EditUserModal({ user, onClose, onSuccess }) {
+  const [form, setForm] = useState(null)
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
 
   useEffect(() => {
-    if (form.roleSelection === 'ADMINISTRADOR') {
-      setForm((prev) => ({
-        ...prev,
-        userType: 'Administrativo',
-      }))
+    if (user) {
+      const roleSelection = user.role === 'ADMIN' ? 'ADMINISTRADOR' : 'SOLICITANTE'
+      const userType = user.role === 'ADMIN' ? 'Administrativo' : (user.userType || '')
+
+      setForm({
+        name: user.name || '',
+        lastName: user.lastName || '',
+        birthDate: user.birthDate || '',
+        roleSelection,
+        userType,
+        identifier: user.identifier || '',
+        email: user.email || '',
+        phone: user.phone || '',
+        password: '',
+        active: user.active,
+      })
+    }
+  }, [user])
+
+  useEffect(() => {
+    if (!form) return
+
+    if (form.roleSelection === 'ADMINISTRADOR' && form.userType !== 'Administrativo') {
+      setForm((prev) => ({ ...prev, userType: 'Administrativo' }))
     }
 
     if (form.roleSelection === 'SOLICITANTE' && form.userType === 'Administrativo') {
-      setForm((prev) => ({
-        ...prev,
-        userType: '',
-      }))
+      setForm((prev) => ({ ...prev, userType: '' }))
     }
-  }, [form.roleSelection, form.userType])
+  }, [form?.roleSelection])
+
+  if (!form) return null
 
   const handleChange = (field, value) => {
     if (field === 'phone') {
@@ -64,6 +70,9 @@ function CreateUserModal({ onClose, onSuccess }) {
     return /^[A-Za-z0-9._%+-]+@utez\.edu\.mx$/i.test(email.trim())
   }
 
+  const normalizeHumanName = (value) => value.trim().replace(/\s{2,}/g, ' ')
+  const normalizeCompact = (value) => value.replace(/\s+/g, '')
+
   const validateForm = () => {
     if (
       !form.name.trim() ||
@@ -73,30 +82,47 @@ function CreateUserModal({ onClose, onSuccess }) {
       !form.userType ||
       !form.identifier.trim() ||
       !form.email.trim() ||
-      !form.phone.trim() ||
-      !form.password
+      !form.phone.trim()
     ) {
       showToast('error', 'Datos inválidos')
       return false
     }
 
+    const cleanName = normalizeHumanName(form.name)
+    const cleanLastName = normalizeHumanName(form.lastName)
+
+    if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñÜü]+( [A-Za-zÁÉÍÓÚáéíóúÑñÜü]+)?$/.test(cleanName)) {
+      showToast('error', 'Datos de nombres no validos')
+      return false
+    }
+
+    if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñÜü]+( [A-Za-zÁÉÍÓÚáéíóúÑñÜü]+)?$/.test(cleanLastName)) {
+      showToast('error', 'Dato inválido en información personal')
+      return false
+    }
+
     if (!validateAge(form.birthDate)) {
-      showToast('error', 'Datos inválidos')
+      showToast('error', 'Año de nacimiento no válido')
       return false
     }
 
-    if (!/^\d{10}$/.test(form.phone.trim())) {
-      showToast('error', 'Datos inválidos')
+    if (!/^\d{10}$/.test(normalizeCompact(form.phone))) {
+      showToast('error', 'Teléfono no válido')
       return false
     }
 
-    if (!isUtezEmail(form.email)) {
-      showToast('error', 'Datos inválidos')
+    if (!isUtezEmail(normalizeCompact(form.email))) {
+      showToast('error', 'Correo no válido')
+      return false
+    }
+
+    if (/\s/.test(normalizeCompact(form.identifier)) === false && !form.identifier.trim()) {
+      showToast('error', 'Matrícula o número de empleado no válido')
       return false
     }
 
     if (form.roleSelection === 'ADMINISTRADOR' && form.userType !== 'Administrativo') {
-      showToast('error', 'Datos inválidos')
+      showToast('error', 'Datos institucionales están mal')
       return false
     }
 
@@ -104,7 +130,7 @@ function CreateUserModal({ onClose, onSuccess }) {
       form.roleSelection === 'SOLICITANTE' &&
       !['Personal Académico', 'Estudiante'].includes(form.userType)
     ) {
-      showToast('error', 'Datos inválidos')
+      showToast('error', 'Datos institucionales están mal')
       return false
     }
 
@@ -123,14 +149,14 @@ function CreateUserModal({ onClose, onSuccess }) {
     }
 
     return {
-      name: form.name.trim(),
-      lastName: form.lastName.trim(),
+      name: normalizeHumanName(form.name),
+      lastName: normalizeHumanName(form.lastName),
       birthDate: form.birthDate,
       role: backendRole,
       userType: form.userType,
-      identifier: form.identifier.trim(),
-      email: form.email.trim().toLowerCase(),
-      phone: form.phone.trim(),
+      identifier: normalizeCompact(form.identifier),
+      email: normalizeCompact(form.email).toLowerCase(),
+      phone: normalizeCompact(form.phone),
       password: form.password,
       active: form.active,
     }
@@ -144,8 +170,8 @@ function CreateUserModal({ onClose, onSuccess }) {
     setLoading(true)
 
     try {
-      await createUser(mapToBackendPayload())
-      showToast('success', 'Usuario registrado correctamente')
+      await updateUser(user.id, mapToBackendPayload())
+      showToast('success', 'Usuario actualizado correctamente')
       onSuccess()
       onClose()
     } catch (error) {
@@ -163,8 +189,8 @@ function CreateUserModal({ onClose, onSuccess }) {
       <div style={modalStyle}>
         <div style={topRowStyle}>
           <div>
-            <h2 style={titleStyle}>Registrar Nuevo Usuario</h2>
-            <p style={subtitleStyle}>Completa la información para dar de alta a un nuevo integrante.</p>
+            <h2 style={titleStyle}>Editar Usuario</h2>
+            <p style={subtitleStyle}>Actualiza la información del integrante.</p>
           </div>
 
           <button type="button" onClick={onClose} style={backButtonStyle}>
@@ -239,7 +265,6 @@ function CreateUserModal({ onClose, onSuccess }) {
                     ...inputStyle,
                     background: typeDisabled ? '#f3f4f6' : '#ffffff',
                     color: typeDisabled ? '#64748b' : '#111827',
-                    cursor: typeDisabled ? 'not-allowed' : 'pointer',
                   }}
                   disabled={typeDisabled}
                   required
@@ -295,14 +320,14 @@ function CreateUserModal({ onClose, onSuccess }) {
               </div>
 
               <div style={fieldStyle}>
-                <label style={labelStyle}>Contraseña *</label>
+                <label style={labelStyle}>Contraseña</label>
                 <div style={{ position: 'relative' }}>
                   <input
                     type={showPassword ? 'text' : 'password'}
                     value={form.password}
                     onChange={(e) => handleChange('password', e.target.value)}
                     style={{ ...inputStyle, paddingRight: '46px' }}
-                    required
+                    placeholder="Opcional"
                   />
                   <button
                     type="button"
@@ -322,7 +347,7 @@ function CreateUserModal({ onClose, onSuccess }) {
             </button>
 
             <button type="submit" disabled={loading} style={submitButtonStyle}>
-              {loading ? 'Registrando...' : 'Registrar Usuario'}
+              {loading ? 'Guardando...' : 'Guardar Cambios'}
             </button>
           </div>
         </form>
@@ -463,4 +488,4 @@ const submitButtonStyle = {
   cursor: 'pointer',
 }
 
-export default CreateUserModal
+export default EditUserModal
