@@ -6,6 +6,7 @@ import ForgotPasswordPage from '../pages/auth/ForgotPasswordPage'
 import VerifyOtpPage from '../pages/auth/VerifyOtpPage'
 import ResetPasswordPage from '../pages/auth/ResetPasswordPage'
 import DashboardPage from '../pages/dashboard/DashboardPage'
+import UsersPage from '../pages/users/UsersPage'
 import RequestsPage from '../pages/requests/RequestsPage'
 import NewRequestPage from '../pages/requests/NewRequestPage'
 import SpacesPage from '../pages/spaces/SpacesPage'
@@ -30,6 +31,7 @@ function AppRouter() {
       </Route>
 
       <Route element={<RoleRoute allowedRoles={['ADMIN']} />}>
+        <Route path="/users" element={<UsersPage />} />
         <Route path="/spaces" element={<SpacesPage />} />
         <Route path="/equipments" element={<EquipmentsPage />} />
         <Route path="/history" element={<HistoryPage />} />

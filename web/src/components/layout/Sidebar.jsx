@@ -11,25 +11,31 @@ function Sidebar() {
 
       <nav style={{ marginTop: '2rem' }}>
         <NavLink to="/dashboard" style={linkStyle}>
-          Dashboard
+          Inicio
         </NavLink>
 
+        {isAdmin && (
+          <NavLink to="/users" style={linkStyle}>
+            Gestión de Usuarios
+          </NavLink>
+        )}
+
         <NavLink to="/requests" end style={linkStyle}>
-          Solicitudes
+          Gestión de Solicitudes
         </NavLink>
 
         <NavLink to="/requests/new" style={linkStyle}>
-          Nueva solicitud
+          Nueva Solicitud
         </NavLink>
 
         {isAdmin && (
           <>
             <NavLink to="/spaces" style={linkStyle}>
-              Espacios
+              Gestión de Espacios
             </NavLink>
 
             <NavLink to="/equipments" style={linkStyle}>
-              Equipos
+              Gestión de Equipos
             </NavLink>
 
             <NavLink to="/history" style={linkStyle}>
