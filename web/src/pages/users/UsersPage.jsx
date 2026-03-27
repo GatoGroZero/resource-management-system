@@ -44,8 +44,8 @@ function UsersPage() {
     setTypeFilter('')
     setStatusFilter('')
 
-    if (value === 'ADMIN') setBackendFilter('')
-    else if (value === 'SOLICITANTE') setBackendFilter('STUDENTS')
+    if (value === 'ADMIN') setBackendFilter('ADMIN')
+    else if (value === 'SOLICITANTE') setBackendFilter('')
     else setBackendFilter('')
   }
 
@@ -107,13 +107,19 @@ function UsersPage() {
     }
   }
 
-  const handleToggleStatus = async (id) => {
+  const handleToggleStatus = async (user) => {
+    if (user.role === 'ADMIN') {
+      showToast('error', 'No se puede desactivar un administrador')
+      return
+    }
+
     try {
-      await toggleUserStatus(id)
+      await toggleUserStatus(user.id)
       showToast('success', 'Estado actualizado correctamente')
       fetchUsers()
-    } catch {
-      showToast('error', 'Datos inválidos')
+    } catch (error) {
+      const message = error?.response?.data?.message || 'Datos inválidos'
+      showToast('error', message)
     }
   }
 
@@ -214,7 +220,15 @@ function UsersPage() {
                   <div style={actionsIconsStyle}>
                     <button type="button" onClick={() => handleView(user.id)} style={viewButtonStyle}>👁</button>
                     <button type="button" onClick={() => handleEdit(user.id)} style={editButtonStyle}>✏</button>
-                    <button type="button" onClick={() => handleToggleStatus(user.id)} style={toggleButtonStyle(user.active)}>⏻</button>
+                    <button
+                      type="button"
+                      onClick={() => handleToggleStatus(user)}
+                      style={toggleButtonStyle(user.active, user.role === 'ADMIN')}
+                      disabled={user.role === 'ADMIN'}
+                      title={user.role === 'ADMIN' ? 'No disponible para administradores' : ''}
+                    >
+                      ⏻
+                    </button>
                   </div>
                 </td>
               </tr>
@@ -459,11 +473,24 @@ const editButtonStyle = {
   borderColor: '#ddd6fe',
 }
 
-const toggleButtonStyle = (active) => ({
+const toggleButtonStyle = (active, disabled) => ({
   ...baseIconButtonStyle,
-  background: active ? '#fef2f2' : '#ecfdf3',
-  color: active ? '#dc2626' : '#16a34a',
-  borderColor: active ? '#fecaca' : '#bbf7d0',
+  background: disabled
+    ? '#f8fafc'
+    : active
+      ? '#fef2f2'
+      : '#ecfdf3',
+  color: disabled
+    ? '#cbd5e1'
+    : active
+      ? '#dc2626'
+      : '#16a34a',
+  borderColor: disabled
+    ? '#e5e7eb'
+    : active
+      ? '#fecaca'
+      : '#bbf7d0',
+  cursor: disabled ? 'not-allowed' : 'pointer',
 })
 
 const footerRowStyle = {

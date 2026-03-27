@@ -42,6 +42,7 @@ public class UserService {
                     );
         } else if (filter != null && !filter.isBlank()) {
             switch (filter.toUpperCase()) {
+                case "ADMIN" -> usersPage = userRepository.findByRole(Role.ADMIN, pageable);
                 case "STUDENTS" -> usersPage = userRepository.findByRole(Role.STUDENT, pageable);
                 case "STAFF" -> usersPage = userRepository.findByRole(Role.STAFF, pageable);
                 case "ACTIVE" -> usersPage = userRepository.findByActive(true, pageable);
@@ -146,6 +147,10 @@ public class UserService {
     public void toggleUserStatus(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        if (user.getRole() == Role.ADMIN) {
+            throw new RuntimeException("No se puede desactivar un administrador");
+        }
 
         user.setActive(!user.getActive());
         userRepository.save(user);
