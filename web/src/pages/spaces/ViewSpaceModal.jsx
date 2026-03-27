@@ -20,6 +20,8 @@ function ViewSpaceModal({ space, onClose }) {
             <Info label="Categoría" value={formatCategory(space.category)} />
             <Info label="Ubicación" value={space.location} />
             <Info label="Capacidad" value={String(space.capacity)} />
+            <Info label="Descripción" value={space.description || '—'} />
+            <Info label="Permitir para alumnos" value={space.allowStudents ? 'Sí' : 'No'} />
             <Info label="Estado" value={space.active ? 'Activo' : 'Inactivo'} />
             <Info label="Disponibilidad" value={formatAvailability(space.availability)} />
           </div>
@@ -69,7 +71,7 @@ function ViewSpaceModal({ space, onClose }) {
   
   const modalStyle = {
     width: '100%',
-    maxWidth: '680px',
+    maxWidth: '760px',
     background: '#ffffff',
     borderRadius: '18px',
     border: '1px solid #e5e7eb',
@@ -131,6 +133,7 @@ function ViewSpaceModal({ space, onClose }) {
     color: '#111827',
     fontSize: '14px',
     fontWeight: 600,
+    whiteSpace: 'pre-wrap',
   }
   
   const footerStyle = {

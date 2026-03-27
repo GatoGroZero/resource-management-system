@@ -12,6 +12,8 @@ public class UpdateSpaceRequest {
     private SpaceCategory category;
     private String location;
     private Integer capacity;
+    private String description;
+    private Boolean allowStudents;
     private Boolean active;
     private SpaceAvailability availability;
 }

@@ -13,6 +13,8 @@ function EditSpaceModal({ space, onClose, onSuccess }) {
         category: space.category || '',
         location: space.location || '',
         capacity: String(space.capacity || ''),
+        description: space.description || '',
+        allowStudents: Boolean(space.allowStudents),
         availability: space.availability || 'DISPONIBLE',
         active: space.active,
       })
@@ -32,7 +34,14 @@ function EditSpaceModal({ space, onClose, onSuccess }) {
   }
 
   const validateForm = () => {
-    if (!form.name.trim() || !form.category || !form.location.trim() || !form.capacity || !form.availability) {
+    if (
+      !form.name.trim() ||
+      !form.category ||
+      !form.location.trim() ||
+      !form.capacity ||
+      !form.description.trim() ||
+      !form.availability
+    ) {
       showToast('error', 'Datos inválidos')
       return false
     }
@@ -40,6 +49,11 @@ function EditSpaceModal({ space, onClose, onSuccess }) {
     const cap = Number(form.capacity)
     if (Number.isNaN(cap) || cap < 1 || cap > 10000) {
       showToast('error', 'Capacidad no válida')
+      return false
+    }
+
+    if (form.description.trim().length < 10 || form.description.trim().length > 500) {
+      showToast('error', 'Descripción no válida')
       return false
     }
 
@@ -59,6 +73,8 @@ function EditSpaceModal({ space, onClose, onSuccess }) {
         category: form.category,
         location: form.location.trim().replace(/\s{2,}/g, ' '),
         capacity: Number(form.capacity),
+        description: form.description.trim().replace(/\s{2,}/g, ' '),
+        allowStudents: form.allowStudents,
         availability: form.availability,
         active: form.active,
       })
@@ -92,7 +108,7 @@ function EditSpaceModal({ space, onClose, onSuccess }) {
           <section style={sectionStyle}>
             <div style={grid2Style}>
               <div style={fieldStyle}>
-                <label style={labelStyle}>Nombre *</label>
+                <label style={labelStyle}>Nombre*</label>
                 <input
                   type="text"
                   value={form.name}
@@ -103,7 +119,7 @@ function EditSpaceModal({ space, onClose, onSuccess }) {
               </div>
 
               <div style={fieldStyle}>
-                <label style={labelStyle}>Categoría *</label>
+                <label style={labelStyle}>Categoría*</label>
                 <select
                   value={form.category}
                   onChange={(e) => handleChange('category', e.target.value)}
@@ -119,7 +135,7 @@ function EditSpaceModal({ space, onClose, onSuccess }) {
               </div>
 
               <div style={fieldStyle}>
-                <label style={labelStyle}>Ubicación *</label>
+                <label style={labelStyle}>Ubicación*</label>
                 <input
                   type="text"
                   value={form.location}
@@ -130,7 +146,7 @@ function EditSpaceModal({ space, onClose, onSuccess }) {
               </div>
 
               <div style={fieldStyle}>
-                <label style={labelStyle}>Capacidad *</label>
+                <label style={labelStyle}>Capacidad*</label>
                 <input
                   type="text"
                   inputMode="numeric"
@@ -141,8 +157,32 @@ function EditSpaceModal({ space, onClose, onSuccess }) {
                 />
               </div>
 
+              <div style={{ ...fieldStyle, gridColumn: '1 / -1' }}>
+                <label style={labelStyle}>Descripción*</label>
+                <textarea
+                  value={form.description}
+                  onChange={(e) => handleChange('description', e.target.value)}
+                  style={textareaStyle}
+                  rows={4}
+                  required
+                />
+              </div>
+
+              <div style={checkboxRowStyle}>
+                <input
+                  id="allowStudentsEdit"
+                  type="checkbox"
+                  checked={form.allowStudents}
+                  onChange={(e) => handleChange('allowStudents', e.target.checked)}
+                  style={checkboxStyle}
+                />
+                <label htmlFor="allowStudentsEdit" style={checkboxLabelStyle}>
+                  Permitir para alumnos
+                </label>
+              </div>
+
               <div style={fieldStyle}>
-                <label style={labelStyle}>Disponibilidad *</label>
+                <label style={labelStyle}>Disponibilidad*</label>
                 <select
                   value={form.availability}
                   onChange={(e) => handleChange('availability', e.target.value)}
@@ -156,7 +196,7 @@ function EditSpaceModal({ space, onClose, onSuccess }) {
               </div>
 
               <div style={fieldStyle}>
-                <label style={labelStyle}>Estado *</label>
+                <label style={labelStyle}>Estado*</label>
                 <select
                   value={String(form.active)}
                   onChange={(e) => handleChange('active', e.target.value === 'true')}
@@ -197,7 +237,7 @@ const overlayStyle = {
 
 const modalStyle = {
   width: '100%',
-  maxWidth: '760px',
+  maxWidth: '820px',
   background: '#ffffff',
   borderRadius: '18px',
   border: '1px solid #e5e7eb',
@@ -268,6 +308,38 @@ const inputStyle = {
   fontSize: '14px',
   color: '#111827',
   outline: 'none',
+}
+
+const textareaStyle = {
+  border: '1px solid #d1d5db',
+  background: '#ffffff',
+  borderRadius: '12px',
+  padding: '12px 14px',
+  fontSize: '14px',
+  color: '#111827',
+  outline: 'none',
+  resize: 'vertical',
+  fontFamily: 'inherit',
+}
+
+const checkboxRowStyle = {
+  gridColumn: '1 / -1',
+  display: 'flex',
+  alignItems: 'center',
+  gap: '10px',
+}
+
+const checkboxStyle = {
+  width: '18px',
+  height: '18px',
+  cursor: 'pointer',
+}
+
+const checkboxLabelStyle = {
+  fontSize: '14px',
+  fontWeight: 600,
+  color: '#374151',
+  cursor: 'pointer',
 }
 
 const footerActionsStyle = {

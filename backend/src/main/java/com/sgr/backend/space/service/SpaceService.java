@@ -61,8 +61,17 @@ public class SpaceService {
     public void createSpace(CreateSpaceRequest request) {
         String name = normalizeText(request.getName());
         String location = normalizeText(request.getLocation());
+        String description = normalizeDescription(request.getDescription());
 
-        validateCommon(name, request.getCategory(), location, request.getCapacity(), request.getAvailability());
+        validateCommon(
+                name,
+                request.getCategory(),
+                location,
+                request.getCapacity(),
+                description,
+                request.getAllowStudents(),
+                request.getAvailability()
+        );
 
         if (spaceRepository.existsByNameIgnoreCase(name)) {
             throw new RuntimeException("Nombre de espacio no válido");
@@ -73,6 +82,8 @@ public class SpaceService {
                 .category(request.getCategory())
                 .location(location)
                 .capacity(request.getCapacity())
+                .description(description)
+                .allowStudents(request.getAllowStudents())
                 .active(request.getActive() != null ? request.getActive() : true)
                 .availability(request.getAvailability())
                 .createdAt(LocalDateTime.now())
@@ -87,8 +98,17 @@ public class SpaceService {
 
         String name = normalizeText(request.getName());
         String location = normalizeText(request.getLocation());
+        String description = normalizeDescription(request.getDescription());
 
-        validateCommon(name, request.getCategory(), location, request.getCapacity(), request.getAvailability());
+        validateCommon(
+                name,
+                request.getCategory(),
+                location,
+                request.getCapacity(),
+                description,
+                request.getAllowStudents(),
+                request.getAvailability()
+        );
 
         if (spaceRepository.existsByNameIgnoreCaseAndIdNot(name, id)) {
             throw new RuntimeException("Nombre de espacio no válido");
@@ -98,6 +118,8 @@ public class SpaceService {
         space.setCategory(request.getCategory());
         space.setLocation(location);
         space.setCapacity(request.getCapacity());
+        space.setDescription(description);
+        space.setAllowStudents(request.getAllowStudents());
         space.setActive(request.getActive() != null ? request.getActive() : space.getActive());
         space.setAvailability(request.getAvailability());
 
@@ -117,14 +139,21 @@ public class SpaceService {
             SpaceCategory category,
             String location,
             Integer capacity,
+            String description,
+            Boolean allowStudents,
             SpaceAvailability availability
     ) {
-        if (name.isBlank() || category == null || location.isBlank() || capacity == null || availability == null) {
+        if (name.isBlank() || category == null || location.isBlank() || capacity == null
+                || description.isBlank() || allowStudents == null || availability == null) {
             throw new RuntimeException("Datos inválidos");
         }
 
         if (name.length() < 3 || location.length() < 3) {
             throw new RuntimeException("Datos inválidos");
+        }
+
+        if (description.length() < 10 || description.length() > 500) {
+            throw new RuntimeException("Descripción no válida");
         }
 
         if (capacity < 1 || capacity > 10000) {
@@ -136,6 +165,10 @@ public class SpaceService {
         return value == null ? "" : value.trim().replaceAll("\\s{2,}", " ");
     }
 
+    private String normalizeDescription(String value) {
+        return value == null ? "" : value.trim().replaceAll("\\s{2,}", " ");
+    }
+
     private SpaceListItemResponse toListResponse(Space space) {
         return SpaceListItemResponse.builder()
                 .id(space.getId())
@@ -143,6 +176,8 @@ public class SpaceService {
                 .category(space.getCategory().name())
                 .location(space.getLocation())
                 .capacity(space.getCapacity())
+                .description(space.getDescription())
+                .allowStudents(space.getAllowStudents())
                 .active(space.getActive())
                 .availability(space.getAvailability().name())
                 .build();
@@ -155,6 +190,8 @@ public class SpaceService {
                 .category(space.getCategory().name())
                 .location(space.getLocation())
                 .capacity(space.getCapacity())
+                .description(space.getDescription())
+                .allowStudents(space.getAllowStudents())
                 .active(space.getActive())
                 .availability(space.getAvailability().name())
                 .build();

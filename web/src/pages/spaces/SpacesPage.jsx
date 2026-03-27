@@ -9,20 +9,24 @@ import { showToast } from '../../utils/alertUtils'
 function SpacesPage() {
   const [spacesPage, setSpacesPage] = useState(null)
   const [page, setPage] = useState(0)
-  const [searchInput, setSearchInput] = useState('')
-  const [activeFilter, setActiveFilter] = useState('')
+
+  const [availabilityFilter, setAvailabilityFilter] = useState('')
+  const [accessFilter, setAccessFilter] = useState('')
+  const [capacityFilter, setCapacityFilter] = useState('')
+
+  const [backendFilter, setBackendFilter] = useState('')
   const [openCreateModal, setOpenCreateModal] = useState(false)
   const [selectedSpace, setSelectedSpace] = useState(null)
   const [openViewModal, setOpenViewModal] = useState(false)
   const [openEditModal, setOpenEditModal] = useState(false)
 
-  const fetchSpaces = async (customPage = page, customFilter = activeFilter, customSearch = '') => {
+  const fetchSpaces = async (customPage = page, customFilter = backendFilter) => {
     try {
       const data = await getSpaces({
         page: customPage,
         size: 10,
         filter: customFilter,
-        search: customSearch,
+        search: '',
       })
       setSpacesPage(data)
     } catch {
@@ -31,19 +35,47 @@ function SpacesPage() {
   }
 
   useEffect(() => {
-    fetchSpaces(page, activeFilter, '')
-  }, [page, activeFilter])
+    fetchSpaces(page, backendFilter)
+  }, [page, backendFilter])
 
-  const handleSearch = () => {
-    setActiveFilter('')
+  const applyAvailabilityFilter = (value) => {
     setPage(0)
-    fetchSpaces(0, '', searchInput.trim())
+    setAvailabilityFilter(value)
+    setAccessFilter('')
+    setCapacityFilter('')
+
+    if (value === 'DISPONIBLE') setBackendFilter('DISPONIBLE')
+    else if (value === 'OCUPADO') setBackendFilter('OCUPADO')
+    else if (value === 'MANTENIMIENTO') setBackendFilter('MANTENIMIENTO')
+    else setBackendFilter('')
   }
 
-  const handleFilter = (filter) => {
-    setSearchInput('')
+  const applyAccessFilter = (value) => {
     setPage(0)
-    setActiveFilter(filter)
+    setAvailabilityFilter('')
+    setAccessFilter(value)
+    setCapacityFilter('')
+    setBackendFilter('')
+  }
+
+  const applyCapacityFilter = (value) => {
+    setPage(0)
+    setAvailabilityFilter('')
+    setAccessFilter('')
+    setCapacityFilter(value)
+
+    if (value === 'PEQUENA') setBackendFilter('CAP_SMALL')
+    else if (value === 'MEDIANA') setBackendFilter('CAP_MEDIUM')
+    else if (value === 'GRANDE') setBackendFilter('CAP_LARGE')
+    else setBackendFilter('')
+  }
+
+  const clearFilters = () => {
+    setPage(0)
+    setAvailabilityFilter('')
+    setAccessFilter('')
+    setCapacityFilter('')
+    setBackendFilter('')
   }
 
   const handlePrev = () => {
@@ -87,9 +119,13 @@ function SpacesPage() {
   return (
     <DashboardLayout>
       <div style={headerRowStyle}>
-        <div>
-          <h1 style={titleStyle}>Gestión de Espacios</h1>
-          <p style={subtitleStyle}>Control de aulas, laboratorios y áreas comunes institucionales.</p>
+        <div style={titleWrapStyle}>
+          <button type="button" style={backIconStyle}>←</button>
+
+          <div>
+            <h1 style={titleStyle}>Gestión de Espacios</h1>
+            <p style={subtitleStyle}>Control de aulas, laboratorios y áreas comunes institucionales.</p>
+          </div>
         </div>
 
         <button type="button" onClick={() => setOpenCreateModal(true)} style={addButtonStyle}>
@@ -97,55 +133,68 @@ function SpacesPage() {
         </button>
       </div>
 
-      <div style={toolbarStyle}>
-        <input
-          type="text"
-          placeholder="Buscar por nombre o ubicación"
-          value={searchInput}
-          onChange={(e) => setSearchInput(e.target.value)}
-          style={searchInputStyle}
-        />
+      <div style={filtersPanelStyle}>
+        <div style={filtersGridStyle}>
+          <div style={fieldStyle}>
+            <label style={labelStyle}>DISPONIBILIDAD</label>
+            <select
+              value={availabilityFilter}
+              onChange={(e) => applyAvailabilityFilter(e.target.value)}
+              style={selectStyle}
+            >
+              <option value="">Todos los Estatus</option>
+              <option value="DISPONIBLE">Disponible</option>
+              <option value="OCUPADO">Ocupado</option>
+              <option value="MANTENIMIENTO">Mantenimiento</option>
+            </select>
+          </div>
 
-        <button type="button" onClick={handleSearch} style={searchButtonStyle}>
-          Buscar
-        </button>
-      </div>
+          <div style={fieldStyle}>
+            <label style={labelStyle}>ACCESO</label>
+            <select
+              value={accessFilter}
+              onChange={(e) => applyAccessFilter(e.target.value)}
+              style={selectStyle}
+            >
+              <option value="">Cualquier Acceso</option>
+              <option value="ALUMNOS">Permite alumnos</option>
+              <option value="RESTRINGIDO">Restringido</option>
+            </select>
+          </div>
 
-      <div style={filtersRowStyle}>
-        <button type="button" onClick={() => handleFilter('AULAS')} style={chipStyle(activeFilter === 'AULAS')}>
-          Aulas
-        </button>
-        <button type="button" onClick={() => handleFilter('LABORATORIOS')} style={chipStyle(activeFilter === 'LABORATORIOS')}>
-          Laboratorios
-        </button>
-        <button type="button" onClick={() => handleFilter('AUDITORIOS')} style={chipStyle(activeFilter === 'AUDITORIOS')}>
-          Auditorios
-        </button>
-        <button type="button" onClick={() => handleFilter('SALAS')} style={chipStyle(activeFilter === 'SALAS')}>
-          Salas
-        </button>
-        <button type="button" onClick={() => handleFilter('DISPONIBLE')} style={chipStyle(activeFilter === 'DISPONIBLE')}>
-          Disponible
-        </button>
-        <button type="button" onClick={() => handleFilter('OCUPADO')} style={chipStyle(activeFilter === 'OCUPADO')}>
-          Ocupado
-        </button>
-        <button type="button" onClick={() => handleFilter('MANTENIMIENTO')} style={chipStyle(activeFilter === 'MANTENIMIENTO')}>
-          Mantenimiento
-        </button>
+          <div style={fieldStyle}>
+            <label style={labelStyle}>CAPACIDAD</label>
+            <select
+              value={capacityFilter}
+              onChange={(e) => applyCapacityFilter(e.target.value)}
+              style={selectStyle}
+            >
+              <option value="">Todas las Capacidades</option>
+              <option value="PEQUENA">1 - 30</option>
+              <option value="MEDIANA">31 - 100</option>
+              <option value="GRANDE">101+</option>
+            </select>
+          </div>
+
+          <div style={clearWrapStyle}>
+            <button type="button" onClick={clearFilters} style={refreshButtonStyle}>
+              ↺
+            </button>
+          </div>
+        </div>
       </div>
 
       <div style={tableCardStyle}>
         <table style={tableStyle}>
           <thead>
             <tr>
-              <th style={thStyle}>Nombre</th>
-              <th style={thStyle}>Categoría</th>
-              <th style={thStyle}>Ubicación</th>
-              <th style={thStyle}>Capacidad</th>
-              <th style={thStyle}>Estado</th>
-              <th style={thStyle}>Disponibilidad</th>
-              <th style={thStyle}>Acciones</th>
+              <th style={thStyle}>NOMBRE</th>
+              <th style={thStyle}>CATEGORÍA</th>
+              <th style={thStyle}>UBICACIÓN</th>
+              <th style={thStyle}>CAPACIDAD</th>
+              <th style={thStyle}>ESTADO</th>
+              <th style={thStyle}>DISPONIBILIDAD</th>
+              <th style={thStyle}>ACCIONES</th>
             </tr>
           </thead>
 
@@ -155,7 +204,7 @@ function SpacesPage() {
                 <td style={tdNameStyle}>{space.name}</td>
                 <td style={tdMutedStyle}>{formatCategory(space.category)}</td>
                 <td style={tdMutedStyle}>{space.location}</td>
-                <td style={tdMutedStyle}>{space.capacity}</td>
+                <td style={tdCodeStyle}>{space.capacity}</td>
                 <td style={tdStyle}>
                   <span style={statusStyle(space.active)}>
                     {space.active ? 'Activo' : 'Inactivo'}
@@ -223,7 +272,7 @@ function formatCategory(category) {
   if (category === 'AULA') return 'Aula'
   if (category === 'LABORATORIO') return 'Laboratorio'
   if (category === 'AUDITORIO') return 'Auditorio'
-  return 'Sala'
+  return 'Sala de Juntas'
 }
 
 function formatAvailability(value) {
@@ -237,6 +286,21 @@ const headerRowStyle = {
   justifyContent: 'space-between',
   alignItems: 'center',
   marginBottom: '18px',
+}
+
+const titleWrapStyle = {
+  display: 'flex',
+  alignItems: 'flex-start',
+  gap: '12px',
+}
+
+const backIconStyle = {
+  border: 'none',
+  background: 'transparent',
+  color: '#94a3b8',
+  fontSize: '20px',
+  cursor: 'pointer',
+  marginTop: '2px',
 }
 
 const titleStyle = {
@@ -259,18 +323,37 @@ const addButtonStyle = {
   borderRadius: '12px',
   fontWeight: 700,
   cursor: 'pointer',
-  boxShadow: '0 4px 10px rgba(0,132,61,0.18)',
 }
 
-const toolbarStyle = {
+const filtersPanelStyle = {
+  background: '#ffffff',
+  border: '1px solid #dfe6ee',
+  borderRadius: '16px',
+  padding: '14px',
+  marginBottom: '18px',
+  boxShadow: '0 4px 16px rgba(15,23,42,0.04)',
+}
+
+const filtersGridStyle = {
   display: 'grid',
-  gridTemplateColumns: '1fr auto',
+  gridTemplateColumns: '1fr 1fr 1fr auto',
   gap: '12px',
-  marginBottom: '14px',
+  alignItems: 'end',
 }
 
-const searchInputStyle = {
-  width: '100%',
+const fieldStyle = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '6px',
+}
+
+const labelStyle = {
+  fontSize: '12px',
+  fontWeight: 800,
+  color: '#94a3b8',
+}
+
+const selectStyle = {
   border: '1px solid #d7dde5',
   background: '#ffffff',
   borderRadius: '12px',
@@ -280,34 +363,21 @@ const searchInputStyle = {
   fontSize: '14px',
 }
 
-const searchButtonStyle = {
-  border: 'none',
-  background: '#0b5fa5',
-  color: '#ffffff',
-  padding: '12px 18px',
-  borderRadius: '12px',
-  fontWeight: 700,
-  cursor: 'pointer',
-  boxShadow: '0 4px 10px rgba(11,95,165,0.18)',
-}
-
-const filtersRowStyle = {
+const clearWrapStyle = {
   display: 'flex',
-  gap: '10px',
-  flexWrap: 'wrap',
-  marginBottom: '14px',
+  alignItems: 'end',
 }
 
-const chipStyle = (active) => ({
-  border: '1px solid',
-  borderColor: active ? '#b7dfc0' : '#e2e8f0',
-  background: active ? '#e8f5e9' : '#f8fafc',
-  color: active ? '#166534' : '#475569',
-  padding: '9px 14px',
-  borderRadius: '10px',
-  fontWeight: 600,
+const refreshButtonStyle = {
+  width: '44px',
+  height: '44px',
+  border: '1px solid #d7dde5',
+  background: '#ffffff',
+  color: '#64748b',
+  borderRadius: '12px',
   cursor: 'pointer',
-})
+  fontWeight: 700,
+}
 
 const tableCardStyle = {
   background: '#ffffff',
@@ -331,21 +401,14 @@ const thStyle = {
   fontSize: '13px',
   fontWeight: 800,
   textTransform: 'uppercase',
-  letterSpacing: '0.2px',
 }
 
-const rowEvenStyle = {
-  background: '#ffffff',
-}
-
-const rowOddStyle = {
-  background: '#fcfdff',
-}
+const rowEvenStyle = { background: '#ffffff' }
+const rowOddStyle = { background: '#fcfdff' }
 
 const tdStyle = {
   padding: '16px 18px',
   borderBottom: '1px solid #eef2f7',
-  color: '#0f172a',
   fontSize: '14px',
   verticalAlign: 'middle',
 }
@@ -353,6 +416,12 @@ const tdStyle = {
 const tdNameStyle = {
   ...tdStyle,
   color: '#0b2f63',
+  fontWeight: 700,
+}
+
+const tdCodeStyle = {
+  ...tdStyle,
+  color: '#1e293b',
   fontWeight: 700,
 }
 
@@ -364,7 +433,7 @@ const tdMutedStyle = {
 const statusStyle = (active) => ({
   background: active ? '#dcfce7' : '#fee2e2',
   color: active ? '#15803d' : '#dc2626',
-  padding: '5px 11px',
+  padding: '5px 10px',
   borderRadius: '999px',
   fontSize: '12px',
   fontWeight: 700,
@@ -376,7 +445,7 @@ const availabilityStyle = (availability) => {
     return {
       background: '#dcfce7',
       color: '#15803d',
-      padding: '5px 11px',
+      padding: '5px 10px',
       borderRadius: '999px',
       fontSize: '12px',
       fontWeight: 700,
@@ -388,7 +457,7 @@ const availabilityStyle = (availability) => {
     return {
       background: '#fef3c7',
       color: '#d97706',
-      padding: '5px 11px',
+      padding: '5px 10px',
       borderRadius: '999px',
       fontSize: '12px',
       fontWeight: 700,
@@ -398,8 +467,8 @@ const availabilityStyle = (availability) => {
 
   return {
     background: '#fee2e2',
-    color: '#dc2626',
-    padding: '5px 11px',
+    color: '#ea580c',
+    padding: '5px 10px',
     borderRadius: '999px',
     fontSize: '12px',
     fontWeight: 700,

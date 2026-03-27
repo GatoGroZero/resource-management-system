@@ -31,6 +31,12 @@ public class Space {
     @Column(nullable = false)
     private Integer capacity;
 
+    @Column(nullable = false, length = 500)
+    private String description;
+
+    @Column(nullable = false)
+    private Boolean allowStudents;
+
     @Column(nullable = false)
     private Boolean active;
 

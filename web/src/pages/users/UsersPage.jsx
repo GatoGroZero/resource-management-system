@@ -9,20 +9,24 @@ import { showToast } from '../../utils/alertUtils'
 function UsersPage() {
   const [usersPage, setUsersPage] = useState(null)
   const [page, setPage] = useState(0)
-  const [searchInput, setSearchInput] = useState('')
-  const [activeFilter, setActiveFilter] = useState('')
+
+  const [roleFilter, setRoleFilter] = useState('')
+  const [typeFilter, setTypeFilter] = useState('')
+  const [statusFilter, setStatusFilter] = useState('')
+
+  const [backendFilter, setBackendFilter] = useState('')
   const [openCreateModal, setOpenCreateModal] = useState(false)
   const [selectedUser, setSelectedUser] = useState(null)
   const [openViewModal, setOpenViewModal] = useState(false)
   const [openEditModal, setOpenEditModal] = useState(false)
 
-  const fetchUsers = async (customPage = page, customFilter = activeFilter, customSearch = '') => {
+  const fetchUsers = async (customPage = page, customFilter = backendFilter) => {
     try {
       const data = await getUsers({
         page: customPage,
         size: 10,
         filter: customFilter,
-        search: customSearch,
+        search: '',
       })
       setUsersPage(data)
     } catch {
@@ -31,19 +35,48 @@ function UsersPage() {
   }
 
   useEffect(() => {
-    fetchUsers(page, activeFilter, '')
-  }, [page, activeFilter])
+    fetchUsers(page, backendFilter)
+  }, [page, backendFilter])
 
-  const handleSearch = () => {
-    setActiveFilter('')
+  const applyRoleFilter = (value) => {
     setPage(0)
-    fetchUsers(0, '', searchInput.trim())
+    setRoleFilter(value)
+    setTypeFilter('')
+    setStatusFilter('')
+
+    if (value === 'ADMIN') setBackendFilter('')
+    else if (value === 'SOLICITANTE') setBackendFilter('STUDENTS')
+    else setBackendFilter('')
   }
 
-  const handleFilter = (filter) => {
-    setSearchInput('')
+  const applyTypeFilter = (value) => {
     setPage(0)
-    setActiveFilter(filter)
+    setRoleFilter('')
+    setTypeFilter(value)
+    setStatusFilter('')
+
+    if (value === 'ESTUDIANTE') setBackendFilter('STUDENTS')
+    else if (value === 'PERSONAL') setBackendFilter('STAFF')
+    else setBackendFilter('')
+  }
+
+  const applyStatusFilter = (value) => {
+    setPage(0)
+    setRoleFilter('')
+    setTypeFilter('')
+    setStatusFilter(value)
+
+    if (value === 'ACTIVO') setBackendFilter('ACTIVE')
+    else if (value === 'INACTIVO') setBackendFilter('INACTIVE')
+    else setBackendFilter('')
+  }
+
+  const clearFilters = () => {
+    setPage(0)
+    setRoleFilter('')
+    setTypeFilter('')
+    setStatusFilter('')
+    setBackendFilter('')
   }
 
   const handlePrev = () => {
@@ -88,63 +121,90 @@ function UsersPage() {
     <DashboardLayout>
       <div style={headerRowStyle}>
         <div>
-          <h1 style={titleStyle}>Gestión de Usuarios</h1>
+          <h1 style={titleStyle}>Administración de Usuarios</h1>
+          <p style={subtitleStyle}>Gestión centralizada de accesos y perfiles universitarios.</p>
         </div>
 
         <button type="button" onClick={() => setOpenCreateModal(true)} style={addButtonStyle}>
-          + Agregar Usuario
+          + Nuevo Usuario
         </button>
       </div>
 
-      <div style={toolbarStyle}>
-        <input
-          type="text"
-          placeholder="Buscar por nombre o matrícula/ID"
-          value={searchInput}
-          onChange={(e) => setSearchInput(e.target.value)}
-          style={searchInputStyle}
-        />
+      <div style={filtersPanelStyle}>
+        <div style={filtersGridStyle}>
+          <div style={fieldStyle}>
+            <label style={labelStyle}>FILTRAR POR ROL</label>
+            <select
+              value={roleFilter}
+              onChange={(e) => applyRoleFilter(e.target.value)}
+              style={selectStyle}
+            >
+              <option value="">Todos los Roles</option>
+              <option value="ADMIN">Administrador</option>
+              <option value="SOLICITANTE">Usuario solicitante</option>
+            </select>
+          </div>
 
-        <button type="button" onClick={handleSearch} style={searchButtonStyle}>
-          Buscar
-        </button>
-      </div>
+          <div style={fieldStyle}>
+            <label style={labelStyle}>FILTRAR POR TIPO</label>
+            <select
+              value={typeFilter}
+              onChange={(e) => applyTypeFilter(e.target.value)}
+              style={selectStyle}
+            >
+              <option value="">Todos los Tipos</option>
+              <option value="ESTUDIANTE">Estudiante</option>
+              <option value="PERSONAL">Personal</option>
+            </select>
+          </div>
 
-      <div style={filtersRowStyle}>
-        <button type="button" onClick={() => handleFilter('STUDENTS')} style={chipStyle(activeFilter === 'STUDENTS')}>
-          Estudiantes
-        </button>
-        <button type="button" onClick={() => handleFilter('STAFF')} style={chipStyle(activeFilter === 'STAFF')}>
-          Personal
-        </button>
-        <button type="button" onClick={() => handleFilter('ACTIVE')} style={chipStyle(activeFilter === 'ACTIVE')}>
-          Activos
-        </button>
-        <button type="button" onClick={() => handleFilter('INACTIVE')} style={chipStyle(activeFilter === 'INACTIVE')}>
-          Inactivos
-        </button>
+          <div style={fieldStyle}>
+            <label style={labelStyle}>FILTRAR POR ESTADO</label>
+            <select
+              value={statusFilter}
+              onChange={(e) => applyStatusFilter(e.target.value)}
+              style={selectStyle}
+            >
+              <option value="">Todos los Estados</option>
+              <option value="ACTIVO">Activo</option>
+              <option value="INACTIVO">Inactivo</option>
+            </select>
+          </div>
+
+          <div style={clearWrapStyle}>
+            <button type="button" onClick={clearFilters} style={clearButtonStyle}>
+              ↻ Limpiar Filtros
+            </button>
+          </div>
+        </div>
       </div>
 
       <div style={tableCardStyle}>
         <table style={tableStyle}>
           <thead>
             <tr>
-              <th style={thStyle}>Nombre</th>
-              <th style={thStyle}>Correo</th>
-              <th style={thStyle}>Matrícula/ID</th>
-              <th style={thStyle}>Rol</th>
-              <th style={thStyle}>Estado</th>
-              <th style={thStyle}>Acciones</th>
+              <th style={thStyle}>MATRÍCULA / ID</th>
+              <th style={thStyle}>NOMBRE COMPLETO</th>
+              <th style={thStyle}>CORREO INSTITUCIONAL</th>
+              <th style={thStyle}>ROL</th>
+              <th style={thStyle}>TIPO</th>
+              <th style={thStyle}>ESTADO</th>
+              <th style={thStyle}>ACCIONES</th>
             </tr>
           </thead>
 
           <tbody>
             {usersPage?.content?.map((user, index) => (
               <tr key={user.id} style={index % 2 === 0 ? rowEvenStyle : rowOddStyle}>
+                <td style={tdCodeStyle}>{user.identifier || '—'}</td>
                 <td style={tdNameStyle}>{user.fullName}</td>
                 <td style={tdMutedStyle}>{user.email}</td>
-                <td style={tdMutedStyle}>{user.identifier || '—'}</td>
-                <td style={tdMutedStyle}>{formatRole(user.role)}</td>
+                <td style={tdStyle}>
+                  <span style={roleBadgeStyle(user.role)}>
+                    {formatRole(user.role)}
+                  </span>
+                </td>
+                <td style={tdMutedStyle}>{formatType(user.userType)}</td>
                 <td style={tdStyle}>
                   <span style={statusStyle(user.active)}>
                     {user.active ? 'Activo' : 'Inactivo'}
@@ -152,32 +212,9 @@ function UsersPage() {
                 </td>
                 <td style={tdStyle}>
                   <div style={actionsIconsStyle}>
-                    <button
-                      type="button"
-                      onClick={() => handleView(user.id)}
-                      style={viewButtonStyle}
-                      title="Ver"
-                    >
-                      👁
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => handleEdit(user.id)}
-                      style={editButtonStyle}
-                      title="Editar"
-                    >
-                      ✏
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => handleToggleStatus(user.id)}
-                      style={toggleButtonStyle(user.active)}
-                      title={user.active ? 'Desactivar' : 'Activar'}
-                    >
-                      ⏻
-                    </button>
+                    <button type="button" onClick={() => handleView(user.id)} style={viewButtonStyle}>👁</button>
+                    <button type="button" onClick={() => handleEdit(user.id)} style={editButtonStyle}>✏</button>
+                    <button type="button" onClick={() => handleToggleStatus(user.id)} style={toggleButtonStyle(user.active)}>⏻</button>
                   </div>
                 </td>
               </tr>
@@ -191,20 +228,10 @@ function UsersPage() {
           </span>
 
           <div style={pagerButtonsStyle}>
-            <button
-              type="button"
-              onClick={handlePrev}
-              disabled={page === 0}
-              style={pagerButtonStyle(page === 0)}
-            >
+            <button type="button" onClick={handlePrev} disabled={page === 0} style={pagerButtonStyle(page === 0)}>
               ‹
             </button>
-            <button
-              type="button"
-              onClick={handleNext}
-              disabled={usersPage?.last}
-              style={pagerButtonStyle(Boolean(usersPage?.last))}
-            >
+            <button type="button" onClick={handleNext} disabled={usersPage?.last} style={pagerButtonStyle(Boolean(usersPage?.last))}>
               ›
             </button>
           </div>
@@ -238,8 +265,12 @@ function UsersPage() {
 
 function formatRole(role) {
   if (role === 'ADMIN') return 'Administrador'
-  if (role === 'STAFF') return 'Personal'
-  return 'Solicitante'
+  return 'Usuario solicitante'
+}
+
+function formatType(userType) {
+  if (userType === 'Personal Académico') return 'Personal'
+  return userType || '—'
 }
 
 const headerRowStyle = {
@@ -253,6 +284,12 @@ const titleStyle = {
   fontSize: '22px',
   fontWeight: 800,
   color: '#0b2f63',
+  marginBottom: '6px',
+}
+
+const subtitleStyle = {
+  color: '#64748b',
+  fontSize: '14px',
 }
 
 const addButtonStyle = {
@@ -263,18 +300,37 @@ const addButtonStyle = {
   borderRadius: '12px',
   fontWeight: 700,
   cursor: 'pointer',
-  boxShadow: '0 4px 10px rgba(0,132,61,0.18)',
 }
 
-const toolbarStyle = {
+const filtersPanelStyle = {
+  background: '#ffffff',
+  border: '1px solid #dfe6ee',
+  borderRadius: '16px',
+  padding: '14px',
+  marginBottom: '18px',
+  boxShadow: '0 4px 16px rgba(15,23,42,0.04)',
+}
+
+const filtersGridStyle = {
   display: 'grid',
-  gridTemplateColumns: '1fr auto',
+  gridTemplateColumns: '1fr 1fr 1fr auto',
   gap: '12px',
-  marginBottom: '14px',
+  alignItems: 'end',
 }
 
-const searchInputStyle = {
-  width: '100%',
+const fieldStyle = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '6px',
+}
+
+const labelStyle = {
+  fontSize: '12px',
+  fontWeight: 800,
+  color: '#94a3b8',
+}
+
+const selectStyle = {
   border: '1px solid #d7dde5',
   background: '#ffffff',
   borderRadius: '12px',
@@ -284,35 +340,21 @@ const searchInputStyle = {
   fontSize: '14px',
 }
 
-const searchButtonStyle = {
-  border: 'none',
-  background: '#0b5fa5',
-  color: '#ffffff',
-  padding: '12px 18px',
+const clearWrapStyle = {
+  display: 'flex',
+  alignItems: 'end',
+}
+
+const clearButtonStyle = {
+  border: '1px solid #d7dde5',
+  background: '#ffffff',
+  color: '#475569',
+  padding: '12px 16px',
   borderRadius: '12px',
   fontWeight: 700,
   cursor: 'pointer',
-  boxShadow: '0 4px 10px rgba(11,95,165,0.18)',
+  whiteSpace: 'nowrap',
 }
-
-const filtersRowStyle = {
-  display: 'flex',
-  gap: '10px',
-  flexWrap: 'wrap',
-  marginBottom: '14px',
-}
-
-const chipStyle = (active) => ({
-  border: '1px solid',
-  borderColor: active ? '#b7dfc0' : '#e2e8f0',
-  background: active ? '#e8f5e9' : '#f8fafc',
-  color: active ? '#166534' : '#475569',
-  padding: '9px 14px',
-  borderRadius: '10px',
-  fontWeight: 600,
-  cursor: 'pointer',
-  transition: 'all 0.2s ease',
-})
 
 const tableCardStyle = {
   background: '#ffffff',
@@ -336,23 +378,22 @@ const thStyle = {
   fontSize: '13px',
   fontWeight: 800,
   textTransform: 'uppercase',
-  letterSpacing: '0.2px',
 }
 
-const rowEvenStyle = {
-  background: '#ffffff',
-}
-
-const rowOddStyle = {
-  background: '#fcfdff',
-}
+const rowEvenStyle = { background: '#ffffff' }
+const rowOddStyle = { background: '#fcfdff' }
 
 const tdStyle = {
   padding: '16px 18px',
   borderBottom: '1px solid #eef2f7',
-  color: '#0f172a',
   fontSize: '14px',
   verticalAlign: 'middle',
+}
+
+const tdCodeStyle = {
+  ...tdStyle,
+  color: '#36577b',
+  fontWeight: 700,
 }
 
 const tdNameStyle = {
@@ -366,10 +407,20 @@ const tdMutedStyle = {
   color: '#64748b',
 }
 
+const roleBadgeStyle = (role) => ({
+  background: role === 'ADMIN' ? '#eef2ff' : '#eff6ff',
+  color: role === 'ADMIN' ? '#4f46e5' : '#2563eb',
+  padding: '5px 10px',
+  borderRadius: '999px',
+  fontSize: '12px',
+  fontWeight: 700,
+  display: 'inline-block',
+})
+
 const statusStyle = (active) => ({
-  background: active ? '#dcfce7' : '#fee2e2',
-  color: active ? '#15803d' : '#dc2626',
-  padding: '5px 11px',
+  background: active ? '#dcfce7' : '#e5e7eb',
+  color: active ? '#15803d' : '#6b7280',
+  padding: '5px 10px',
   borderRadius: '999px',
   fontSize: '12px',
   fontWeight: 700,
