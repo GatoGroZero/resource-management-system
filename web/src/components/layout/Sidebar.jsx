@@ -1,71 +1,97 @@
 import { NavLink } from 'react-router-dom'
-import { useAuth } from '../../context/AuthContext'
 
 function Sidebar() {
-  const { user } = useAuth()
-  const isAdmin = user?.role === 'ADMIN'
+  const items = [
+    { label: 'Usuarios', path: '/users', icon: '👥' },
+    { label: 'Espacios', path: '/spaces', icon: '📋' },
+    { label: 'Inventario', path: '/inventory', icon: '📦' },
+    { label: 'Reservas', path: '/reservations', icon: '🗓️' },
+    { label: 'Auditoría', path: '/audit', icon: '🕘' },
+  ]
 
   return (
     <aside style={sidebarStyle}>
-      <div style={logoStyle}>SGR</div>
+      <div style={brandStyle}>
+        <div style={logoBoxStyle}></div>
+        <span style={brandTextStyle}>DIGITAL CORE</span>
+      </div>
 
-      <nav style={{ marginTop: '2rem' }}>
-        <NavLink to="/dashboard" style={linkStyle}>
-          Dashboard
-        </NavLink>
-
-        <NavLink to="/requests" end style={linkStyle}>
-          Solicitudes
-        </NavLink>
-
-        <NavLink to="/requests/new" style={linkStyle}>
-          Nueva solicitud
-        </NavLink>
-
-        {isAdmin && (
-          <>
-            <NavLink to="/spaces" style={linkStyle}>
-              Espacios
-            </NavLink>
-
-            <NavLink to="/equipments" style={linkStyle}>
-              Equipos
-            </NavLink>
-
-            <NavLink to="/history" style={linkStyle}>
-              Historial
-            </NavLink>
-          </>
-        )}
-
-        <NavLink to="/profile" style={linkStyle}>
-          Perfil
-        </NavLink>
+      <nav style={navStyle}>
+        {items.map((item) => (
+          <NavLink
+            key={item.path}
+            to={item.path}
+            style={({ isActive }) => ({
+              ...linkStyle,
+              ...(isActive ? activeLinkStyle : {}),
+            })}
+          >
+            <span style={iconStyle}>{item.icon}</span>
+            <span>{item.label}</span>
+          </NavLink>
+        ))}
       </nav>
     </aside>
   )
 }
 
 const sidebarStyle = {
-  width: '240px',
-  background: '#01402E',
-  color: '#FFFFFF',
-  padding: '1.5rem 1rem',
+  width: '202px',
+  minWidth: '202px',
+  background: '#00843D',
+  color: '#ffffff',
+  minHeight: '100vh',
+  padding: '16px 10px',
+  boxSizing: 'border-box',
 }
 
-const logoStyle = {
-  fontSize: '1.4rem',
-  fontWeight: '800',
+const brandStyle = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: '10px',
+  marginBottom: '28px',
+  padding: '0 10px',
 }
 
-const linkStyle = ({ isActive }) => ({
-  display: 'block',
-  padding: '0.8rem 1rem',
-  borderRadius: '10px',
-  marginBottom: '0.4rem',
-  color: isActive ? '#01402E' : '#E5E7EB',
-  background: isActive ? '#C8E6C9' : 'transparent',
-  fontWeight: isActive ? '700' : '500',
-})
+const logoBoxStyle = {
+  width: '28px',
+  height: '28px',
+  borderRadius: '8px',
+  background: '#d9d9d9',
+}
+
+const brandTextStyle = {
+  fontWeight: 800,
+  fontSize: '16px',
+}
+
+const navStyle = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '8px',
+}
+
+const linkStyle = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: '10px',
+  color: '#e7f7ee',
+  textDecoration: 'none',
+  padding: '13px 12px',
+  borderRadius: '12px',
+  fontWeight: 500,
+}
+
+const activeLinkStyle = {
+  background: 'rgba(255,255,255,0.12)',
+  color: '#ffffff',
+  fontWeight: 700,
+}
+
+const iconStyle = {
+  width: '18px',
+  display: 'inline-flex',
+  justifyContent: 'center',
+}
 
 export default Sidebar

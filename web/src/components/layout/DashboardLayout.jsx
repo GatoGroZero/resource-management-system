@@ -3,10 +3,10 @@ import Topbar from './Topbar'
 
 function DashboardLayout({ children }) {
   return (
-    <div style={layoutStyle}>
+    <div style={pageStyle}>
       <Sidebar />
 
-      <div style={contentWrapper}>
+      <div style={contentAreaStyle}>
         <Topbar />
 
         <main style={mainStyle}>
@@ -17,20 +17,21 @@ function DashboardLayout({ children }) {
   )
 }
 
-const layoutStyle = {
-  display: 'flex',
+const pageStyle = {
   minHeight: '100vh',
-  background: '#F4F6F9',
+  display: 'flex',
+  background: '#f3f4f6',
 }
 
-const contentWrapper = {
+const contentAreaStyle = {
   flex: 1,
   display: 'flex',
   flexDirection: 'column',
+  minWidth: 0,
 }
 
 const mainStyle = {
-  padding: '1.5rem 2rem',
+  padding: '28px 36px',
 }
 
 export default DashboardLayout

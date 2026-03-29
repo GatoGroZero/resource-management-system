@@ -1,31 +1,39 @@
 package com.sgr.backend.notification;
 
+import lombok.RequiredArgsConstructor;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class EmailService {
 
+    private final JavaMailSender mailSender;
+
     public void sendOtpEmail(String to, String code) {
-        System.out.println("=================================");
-        System.out.println("EMAIL SIMULADO - OTP");
-        System.out.println("Para: " + to);
-        System.out.println("OTP: " + code);
-        System.out.println("=================================");
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(to);
+        message.setSubject("Recuperación de contraseña");
+        message.setText(
+                "Tu código de recuperación es: " + code + ". Expira en 15 minutos."
+        );
+        mailSender.send(message);
     }
 
     public void sendRequestApprovedEmail(String to, String requestTitle) {
-        System.out.println("=================================");
-        System.out.println("EMAIL SIMULADO - SOLICITUD APROBADA");
-        System.out.println("Para: " + to);
-        System.out.println("Mensaje: Tu petición sobre: " + requestTitle + " fue aceptada.");
-        System.out.println("=================================");
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(to);
+        message.setSubject("Estado de tu solicitud");
+        message.setText("Tu petición sobre: " + requestTitle + " fue aceptada.");
+        mailSender.send(message);
     }
 
     public void sendRequestRejectedEmail(String to, String requestTitle) {
-        System.out.println("=================================");
-        System.out.println("EMAIL SIMULADO - SOLICITUD RECHAZADA");
-        System.out.println("Para: " + to);
-        System.out.println("Mensaje: Tu petición sobre: " + requestTitle + " fue rechazada.");
-        System.out.println("=================================");
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(to);
+        message.setSubject("Estado de tu solicitud");
+        message.setText("Tu petición sobre: " + requestTitle + " fue rechazada.");
+        mailSender.send(message);
     }
 }
