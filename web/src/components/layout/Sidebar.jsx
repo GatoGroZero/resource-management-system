@@ -1,37 +1,33 @@
 import { NavLink } from 'react-router-dom'
-import { useAuth } from '../../context/AuthContext'
 
 function Sidebar() {
-  const { user } = useAuth()
-  const isAdmin = user?.role === 'ADMIN'
-
-  const adminItems = [
-    { label: 'Usuarios', to: '/users' },
-    { label: 'Espacios', to: '/infrastructure' },
-    { label: 'Inventario', to: '/inventory' },
-    { label: 'Reservas', to: '/reservations' },
-    { label: 'Auditoría', to: '/audit' },
+  const items = [
+    { label: 'Usuarios', path: '/users', icon: '👥' },
+    { label: 'Espacios', path: '/spaces', icon: '📋' },
+    { label: 'Inventario', path: '/inventory', icon: '📦' },
+    { label: 'Reservas', path: '/reservations', icon: '🗓️' },
+    { label: 'Auditoría', path: '/audit', icon: '🕘' },
   ]
-
-  const applicantItems = [
-    { label: 'Portal', to: '/portal' },
-    { label: 'Nueva Solicitud', to: '/new-request' },
-    { label: 'Mi Historial', to: '/request-history' },
-  ]
-
-  const items = isAdmin ? adminItems : applicantItems
 
   return (
     <aside style={sidebarStyle}>
-      <div style={brandRowStyle}>
+      <div style={brandStyle}>
         <div style={logoBoxStyle}></div>
-        <div style={brandTextStyle}>DIGITAL CORE</div>
+        <span style={brandTextStyle}>DIGITAL CORE</span>
       </div>
 
       <nav style={navStyle}>
         {items.map((item) => (
-          <NavLink key={item.to} to={item.to} style={getLinkStyle}>
-            {item.label}
+          <NavLink
+            key={item.path}
+            to={item.path}
+            style={({ isActive }) => ({
+              ...linkStyle,
+              ...(isActive ? activeLinkStyle : {}),
+            })}
+          >
+            <span style={iconStyle}>{item.icon}</span>
+            <span>{item.label}</span>
           </NavLink>
         ))}
       </nav>
@@ -40,16 +36,16 @@ function Sidebar() {
 }
 
 const sidebarStyle = {
-  width: '204px',
-  background: '#008A3A',
+  width: '202px',
+  minWidth: '202px',
+  background: '#00843D',
   color: '#ffffff',
-  padding: '18px 12px',
-  display: 'flex',
-  flexDirection: 'column',
-  flexShrink: 0,
+  minHeight: '100vh',
+  padding: '16px 10px',
+  boxSizing: 'border-box',
 }
 
-const brandRowStyle = {
+const brandStyle = {
   display: 'flex',
   alignItems: 'center',
   gap: '10px',
@@ -58,32 +54,44 @@ const brandRowStyle = {
 }
 
 const logoBoxStyle = {
-  width: '32px',
-  height: '32px',
+  width: '28px',
+  height: '28px',
   borderRadius: '8px',
-  background: '#f8fafc',
-  border: '1px solid rgba(255,255,255,0.35)',
+  background: '#d9d9d9',
 }
 
 const brandTextStyle = {
-  fontSize: '14px',
   fontWeight: 800,
-  letterSpacing: '0.2px',
+  fontSize: '16px',
 }
 
 const navStyle = {
   display: 'flex',
   flexDirection: 'column',
-  gap: '6px',
+  gap: '8px',
 }
 
-const getLinkStyle = ({ isActive }) => ({
-  padding: '12px 14px',
-  borderRadius: '10px',
-  color: '#eafff1',
-  background: isActive ? 'rgba(255,255,255,0.14)' : 'transparent',
-  fontSize: '14px',
-  fontWeight: isActive ? 700 : 500,
-})
+const linkStyle = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: '10px',
+  color: '#e7f7ee',
+  textDecoration: 'none',
+  padding: '13px 12px',
+  borderRadius: '12px',
+  fontWeight: 500,
+}
+
+const activeLinkStyle = {
+  background: 'rgba(255,255,255,0.12)',
+  color: '#ffffff',
+  fontWeight: 700,
+}
+
+const iconStyle = {
+  width: '18px',
+  display: 'inline-flex',
+  justifyContent: 'center',
+}
 
 export default Sidebar

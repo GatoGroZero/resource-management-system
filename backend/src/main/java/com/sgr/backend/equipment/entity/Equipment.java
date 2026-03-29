@@ -18,7 +18,7 @@ public class Equipment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(name = "inventory_number", nullable = false, unique = true)
     private String inventoryNumber;
 
     @Column(nullable = false)
@@ -30,16 +30,16 @@ public class Equipment {
     @Column(nullable = false, length = 500)
     private String description;
 
-    @Column(nullable = false)
+    @Column(name = "allow_students", nullable = false)
     private Boolean allowStudents;
 
     @Column(nullable = false)
     private Boolean active;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "equipment_condition", nullable = false)
     private EquipmentCondition condition;
 
-    @Column(nullable = false)
+    @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 }
