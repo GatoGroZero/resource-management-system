@@ -9,10 +9,9 @@ function EditEquipmentModal({ equipment, onClose, onSuccess }) {
   useEffect(() => {
     if (equipment) {
       setForm({
+        inventoryNumber: equipment.inventoryNumber || '',
         name: equipment.name || '',
-        category: equipment.category || '',
-        code: equipment.code || '',
-        quantity: String(equipment.quantity || ''),
+        category: equipment.category || 'Cómputo',
         description: equipment.description || '',
         allowStudents: Boolean(equipment.allowStudents),
         condition: equipment.condition || 'DISPONIBLE',
@@ -24,13 +23,7 @@ function EditEquipmentModal({ equipment, onClose, onSuccess }) {
   if (!form) return null
 
   const handleChange = (field, value) => {
-    if (field === 'quantity') {
-      const onlyDigits = value.replace(/\D/g, '').slice(0, 5)
-      setForm((prev) => ({ ...prev, [field]: onlyDigits }))
-      return
-    }
-
-    if (field === 'code') {
+    if (field === 'inventoryNumber') {
       setForm((prev) => ({ ...prev, [field]: value.replace(/\s+/g, '') }))
       return
     }
@@ -39,14 +32,14 @@ function EditEquipmentModal({ equipment, onClose, onSuccess }) {
   }
 
   const validateForm = () => {
-    if (!form.name.trim() || !form.category.trim() || !form.code.trim() || !form.quantity || !form.description.trim() || !form.condition) {
+    if (
+      !form.inventoryNumber.trim() ||
+      !form.name.trim() ||
+      !form.category.trim() ||
+      !form.description.trim() ||
+      !form.condition
+    ) {
       showToast('error', 'Datos inválidos')
-      return false
-    }
-
-    const qty = Number(form.quantity)
-    if (Number.isNaN(qty) || qty < 1 || qty > 10000) {
-      showToast('error', 'Cantidad no válida')
       return false
     }
 
@@ -66,10 +59,9 @@ function EditEquipmentModal({ equipment, onClose, onSuccess }) {
 
     try {
       await updateEquipment(equipment.id, {
+        inventoryNumber: form.inventoryNumber.trim(),
         name: form.name.trim().replace(/\s{2,}/g, ' '),
         category: form.category.trim().replace(/\s{2,}/g, ' '),
-        code: form.code.trim(),
-        quantity: Number(form.quantity),
         description: form.description.trim().replace(/\s{2,}/g, ' '),
         allowStudents: form.allowStudents,
         condition: form.condition,
@@ -91,72 +83,71 @@ function EditEquipmentModal({ equipment, onClose, onSuccess }) {
     <div style={overlayStyle}>
       <div style={modalStyle}>
         <div style={topRowStyle}>
-          <div>
-            <h2 style={titleStyle}>Editar Equipo</h2>
-            <p style={subtitleStyle}>Actualiza la información del equipo institucional.</p>
-          </div>
-          <button type="button" onClick={onClose} style={backButtonStyle}>← Volver</button>
+          <h2 style={titleStyle}>Editar Equipo</h2>
+          <button type="button" onClick={onClose} style={closeButtonStyle}>×</button>
         </div>
 
         <form onSubmit={handleSubmit} style={formStyle}>
-          <section style={sectionStyle}>
-            <div style={grid2Style}>
-              <div style={fieldStyle}>
-                <label style={labelStyle}>Nombre*</label>
-                <input type="text" value={form.name} onChange={(e) => handleChange('name', e.target.value)} style={inputStyle} required />
-              </div>
-
-              <div style={fieldStyle}>
-                <label style={labelStyle}>Categoría*</label>
-                <input type="text" value={form.category} onChange={(e) => handleChange('category', e.target.value)} style={inputStyle} required />
-              </div>
-
-              <div style={fieldStyle}>
-                <label style={labelStyle}>Código*</label>
-                <input type="text" value={form.code} onChange={(e) => handleChange('code', e.target.value)} style={inputStyle} required />
-              </div>
-
-              <div style={fieldStyle}>
-                <label style={labelStyle}>Cantidad*</label>
-                <input type="text" inputMode="numeric" value={form.quantity} onChange={(e) => handleChange('quantity', e.target.value)} style={inputStyle} required />
-              </div>
-
-              <div style={{ ...fieldStyle, gridColumn: '1 / -1' }}>
-                <label style={labelStyle}>Descripción*</label>
-                <textarea value={form.description} onChange={(e) => handleChange('description', e.target.value)} style={textareaStyle} rows={4} required />
-              </div>
-
-              <div style={checkboxRowStyle}>
-                <input
-                  id="allowStudentsEquipmentEdit"
-                  type="checkbox"
-                  checked={form.allowStudents}
-                  onChange={(e) => handleChange('allowStudents', e.target.checked)}
-                  style={checkboxStyle}
-                />
-                <label htmlFor="allowStudentsEquipmentEdit" style={checkboxLabelStyle}>
-                  Permitir para alumnos
-                </label>
-              </div>
-
-              <div style={fieldStyle}>
-                <label style={labelStyle}>Condición*</label>
-                <select value={form.condition} onChange={(e) => handleChange('condition', e.target.value)} style={inputStyle} required>
-                  <option value="DISPONIBLE">Disponible</option>
-                  <option value="EN_USO">En uso</option>
-                  <option value="MANTENIMIENTO">Mantenimiento</option>
-                </select>
-              </div>
-
-              <div style={fieldStyle}>
-                <label style={labelStyle}>Estado*</label>
-                <select value={String(form.active)} onChange={(e) => handleChange('active', e.target.value === 'true')} style={inputStyle}>
-                  <option value="true">Activo</option>
-                  <option value="false">Inactivo</option>
-                </select>
-              </div>
+          <div style={grid2Style}>
+            <div style={fieldStyle}>
+              <label style={labelStyle}>Número de Inventario</label>
+              <input
+                type="text"
+                value={form.inventoryNumber}
+                onChange={(e) => handleChange('inventoryNumber', e.target.value)}
+                style={inputStyle}
+                required
+              />
             </div>
-          </section>
+
+            <div style={fieldStyle}>
+              <label style={labelStyle}>Nombre del Equipo</label>
+              <input
+                type="text"
+                value={form.name}
+                onChange={(e) => handleChange('name', e.target.value)}
+                style={inputStyle}
+                required
+              />
+            </div>
+
+            <div style={fieldStyle}>
+              <label style={labelStyle}>Tipo</label>
+              <select
+                value={form.category}
+                onChange={(e) => handleChange('category', e.target.value)}
+                style={inputStyle}
+              >
+                <option value="Cómputo">Cómputo</option>
+                <option value="Audiovisual">Audiovisual</option>
+                <option value="Laboratorio">Laboratorio</option>
+              </select>
+            </div>
+
+            <div style={{ ...fieldStyle, gridColumn: '1 / -1' }}>
+              <label style={labelStyle}>Descripción</label>
+              <textarea
+                value={form.description}
+                onChange={(e) => handleChange('description', e.target.value)}
+                style={textareaStyle}
+                rows={4}
+                required
+              />
+            </div>
+
+            <div style={{ gridColumn: '1 / -1', display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <input
+                id="allowStudentsEquipmentEdit"
+                type="checkbox"
+                checked={form.allowStudents}
+                onChange={(e) => handleChange('allowStudents', e.target.checked)}
+                style={checkboxStyle}
+              />
+              <label htmlFor="allowStudentsEquipmentEdit" style={checkboxLabelStyle}>
+                Permitir acceso a estudiantes
+              </label>
+            </div>
+          </div>
 
           <div style={footerActionsStyle}>
             <button type="button" onClick={onClose} style={cancelButtonStyle}>Cancelar</button>
@@ -171,23 +162,20 @@ function EditEquipmentModal({ equipment, onClose, onSuccess }) {
 }
 
 const overlayStyle = { position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '18px', zIndex: 100 }
-const modalStyle = { width: '100%', maxWidth: '820px', background: '#ffffff', borderRadius: '18px', border: '1px solid #e5e7eb', boxShadow: '0 18px 40px rgba(0,0,0,0.12)', overflow: 'hidden' }
-const topRowStyle = { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', padding: '20px 22px 12px 22px' }
-const titleStyle = { fontSize: '20px', fontWeight: 800, color: '#111827', marginBottom: '6px' }
-const subtitleStyle = { color: '#64748b', fontSize: '14px' }
-const backButtonStyle = { border: 'none', background: 'transparent', color: '#64748b', fontWeight: 600, cursor: 'pointer' }
+const modalStyle = { width: '100%', maxWidth: '560px', background: '#ffffff', borderRadius: '18px', border: '1px solid #e5e7eb', boxShadow: '0 18px 40px rgba(0,0,0,0.12)', overflow: 'hidden' }
+const topRowStyle = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '18px 20px', borderBottom: '1px solid #eef2f7' }
+const titleStyle = { fontSize: '18px', fontWeight: 800, color: '#111827' }
+const closeButtonStyle = { border: 'none', background: 'transparent', color: '#94a3b8', fontSize: '22px', cursor: 'pointer' }
 const formStyle = { display: 'flex', flexDirection: 'column' }
-const sectionStyle = { borderTop: '1px solid #eef2f7', padding: '18px 22px' }
-const grid2Style = { display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '18px' }
+const grid2Style = { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '18px', padding: '20px' }
 const fieldStyle = { display: 'flex', flexDirection: 'column', gap: '8px' }
 const labelStyle = { color: '#374151', fontSize: '14px', fontWeight: 600 }
 const inputStyle = { border: '1px solid #d1d5db', background: '#ffffff', borderRadius: '12px', padding: '12px 14px', fontSize: '14px', color: '#111827', outline: 'none' }
 const textareaStyle = { border: '1px solid #d1d5db', background: '#ffffff', borderRadius: '12px', padding: '12px 14px', fontSize: '14px', color: '#111827', outline: 'none', resize: 'vertical', fontFamily: 'inherit' }
-const checkboxRowStyle = { gridColumn: '1 / -1', display: 'flex', alignItems: 'center', gap: '10px' }
 const checkboxStyle = { width: '18px', height: '18px', cursor: 'pointer' }
-const checkboxLabelStyle = { fontSize: '14px', fontWeight: 600, color: '#374151', cursor: 'pointer' }
-const footerActionsStyle = { borderTop: '1px solid #eef2f7', padding: '18px 22px', display: 'flex', justifyContent: 'flex-end', gap: '12px' }
-const cancelButtonStyle = { border: 'none', background: 'transparent', color: '#374151', padding: '12px 16px', borderRadius: '12px', fontWeight: 600, cursor: 'pointer' }
-const submitButtonStyle = { border: 'none', background: '#00843D', color: '#ffffff', padding: '12px 18px', borderRadius: '12px', fontWeight: 700, cursor: 'pointer' }
+const checkboxLabelStyle = { fontSize: '14px', fontWeight: 500, color: '#374151', cursor: 'pointer' }
+const footerActionsStyle = { borderTop: '1px solid #eef2f7', padding: '14px 20px', display: 'flex', justifyContent: 'flex-end', gap: '12px' }
+const cancelButtonStyle = { border: 'none', background: 'transparent', color: '#64748b', padding: '10px 14px', borderRadius: '12px', fontWeight: 600, cursor: 'pointer' }
+const submitButtonStyle = { border: 'none', background: '#00843D', color: '#ffffff', padding: '10px 16px', borderRadius: '12px', fontWeight: 700, cursor: 'pointer' }
 
 export default EditEquipmentModal

@@ -7,10 +7,9 @@ import lombok.Setter;
 @Getter
 @Setter
 public class UpdateEquipmentRequest {
+    private String inventoryNumber;
     private String name;
     private String category;
-    private String code;
-    private Integer quantity;
     private String description;
     private Boolean allowStudents;
     private Boolean active;

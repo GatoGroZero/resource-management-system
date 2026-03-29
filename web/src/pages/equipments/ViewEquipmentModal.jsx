@@ -1,62 +1,57 @@
 function ViewEquipmentModal({ equipment, onClose }) {
-    if (!equipment) return null
-  
-    return (
-      <div style={overlayStyle}>
-        <div style={modalStyle}>
-          <div style={headerStyle}>
-            <div>
-              <h2 style={titleStyle}>Detalle de Equipo</h2>
-              <p style={subtitleStyle}>Información registrada del equipo</p>
-            </div>
-            <button type="button" onClick={onClose} style={closeButtonStyle}>✕</button>
-          </div>
-  
-          <div style={gridStyle}>
-            <Info label="Nombre" value={equipment.name} />
-            <Info label="Categoría" value={equipment.category} />
-            <Info label="Código" value={equipment.code} />
-            <Info label="Cantidad" value={String(equipment.quantity)} />
-            <Info label="Descripción" value={equipment.description || '—'} />
-            <Info label="Permitir para alumnos" value={equipment.allowStudents ? 'Sí' : 'No'} />
-            <Info label="Estado" value={equipment.active ? 'Activo' : 'Inactivo'} />
-            <Info label="Condición" value={formatCondition(equipment.condition)} />
-          </div>
-  
-          <div style={footerStyle}>
-            <button type="button" onClick={onClose} style={buttonStyle}>Cerrar</button>
-          </div>
+  if (!equipment) return null
+
+  return (
+    <div style={overlayStyle}>
+      <div style={modalStyle}>
+        <div style={headerStyle}>
+          <h2 style={titleStyle}>Detalle de Equipo</h2>
+          <button type="button" onClick={onClose} style={closeButtonStyle}>×</button>
+        </div>
+
+        <div style={gridStyle}>
+          <Info label="Número de Inventario" value={equipment.inventoryNumber} />
+          <Info label="Nombre del Equipo" value={equipment.name} />
+          <Info label="Tipo" value={equipment.category} />
+          <Info label="Descripción" value={equipment.description || '—'} />
+          <Info label="Acceso para estudiantes" value={equipment.allowStudents ? 'Permitido' : 'Restringido'} />
+          <Info label="Estado" value={equipment.active ? 'Activo' : 'Inactivo'} />
+          <Info label="Condición" value={formatCondition(equipment.condition)} />
+        </div>
+
+        <div style={footerStyle}>
+          <button type="button" onClick={onClose} style={buttonStyle}>Cerrar</button>
         </div>
       </div>
-    )
-  }
-  
-  function Info({ label, value }) {
-    return (
-      <div style={infoBoxStyle}>
-        <span style={infoLabelStyle}>{label}</span>
-        <p style={infoValueStyle}>{value}</p>
-      </div>
-    )
-  }
-  
-  function formatCondition(value) {
-    if (value === 'DISPONIBLE') return 'Disponible'
-    if (value === 'EN_USO') return 'En uso'
-    return 'Mantenimiento'
-  }
-  
-  const overlayStyle = { position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '18px', zIndex: 100 }
-  const modalStyle = { width: '100%', maxWidth: '760px', background: '#ffffff', borderRadius: '18px', border: '1px solid #e5e7eb', boxShadow: '0 18px 40px rgba(0,0,0,0.12)', overflow: 'hidden', padding: '24px' }
-  const headerStyle = { display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }
-  const titleStyle = { fontSize: '22px', fontWeight: 800, color: '#111827', marginBottom: '6px' }
-  const subtitleStyle = { color: '#64748b', fontSize: '14px' }
-  const closeButtonStyle = { border: 'none', background: '#f8fafc', width: '36px', height: '36px', borderRadius: '10px', cursor: 'pointer' }
-  const gridStyle = { display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '14px' }
-  const infoBoxStyle = { background: '#f8fafc', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '12px 14px' }
-  const infoLabelStyle = { display: 'block', color: '#64748b', fontSize: '12px', fontWeight: 700, marginBottom: '6px', textTransform: 'uppercase' }
-  const infoValueStyle = { color: '#111827', fontSize: '14px', fontWeight: 600, whiteSpace: 'pre-wrap' }
-  const footerStyle = { display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }
-  const buttonStyle = { border: 'none', background: '#e2e8f0', color: '#0f172a', padding: '12px 16px', borderRadius: '12px', fontWeight: 700, cursor: 'pointer' }
-  
-  export default ViewEquipmentModal
+    </div>
+  )
+}
+
+function Info({ label, value }) {
+  return (
+    <div style={infoBoxStyle}>
+      <span style={infoLabelStyle}>{label}</span>
+      <p style={infoValueStyle}>{value}</p>
+    </div>
+  )
+}
+
+function formatCondition(value) {
+  if (value === 'DISPONIBLE') return 'Disponible'
+  if (value === 'EN_USO') return 'En uso'
+  return 'Mantenimiento'
+}
+
+const overlayStyle = { position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '18px', zIndex: 100 }
+const modalStyle = { width: '100%', maxWidth: '560px', background: '#ffffff', borderRadius: '18px', border: '1px solid #e5e7eb', boxShadow: '0 18px 40px rgba(0,0,0,0.12)', overflow: 'hidden', padding: '20px' }
+const headerStyle = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }
+const titleStyle = { fontSize: '18px', fontWeight: 800, color: '#111827' }
+const closeButtonStyle = { border: 'none', background: 'transparent', color: '#94a3b8', fontSize: '22px', cursor: 'pointer' }
+const gridStyle = { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }
+const infoBoxStyle = { background: '#f8fafc', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '12px 14px' }
+const infoLabelStyle = { display: 'block', color: '#64748b', fontSize: '12px', fontWeight: 700, marginBottom: '6px' }
+const infoValueStyle = { color: '#111827', fontSize: '14px', fontWeight: 600, whiteSpace: 'pre-wrap' }
+const footerStyle = { display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }
+const buttonStyle = { border: 'none', background: '#e2e8f0', color: '#0f172a', padding: '10px 14px', borderRadius: '12px', fontWeight: 700, cursor: 'pointer' }
+
+export default ViewEquipmentModal

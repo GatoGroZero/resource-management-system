@@ -8,19 +8,19 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface EquipmentRepository extends JpaRepository<Equipment, Long> {
 
-    boolean existsByCodeIgnoreCase(String code);
+    boolean existsByInventoryNumberIgnoreCase(String inventoryNumber);
 
-    boolean existsByCodeIgnoreCaseAndIdNot(String code, Long id);
+    boolean existsByInventoryNumberIgnoreCaseAndIdNot(String inventoryNumber, Long id);
 
     Page<Equipment> findByCondition(EquipmentCondition condition, Pageable pageable);
 
     Page<Equipment> findByCategoryIgnoreCase(String category, Pageable pageable);
 
-    Page<Equipment> findByQuantityBetween(Integer min, Integer max, Pageable pageable);
+    Page<Equipment> findByAllowStudents(Boolean allowStudents, Pageable pageable);
 
-    Page<Equipment> findByNameContainingIgnoreCaseOrCodeContainingIgnoreCase(
+    Page<Equipment> findByNameContainingIgnoreCaseOrInventoryNumberContainingIgnoreCase(
             String name,
-            String code,
+            String inventoryNumber,
             Pageable pageable
     );
 }

@@ -26,7 +26,7 @@ public class EquipmentService {
 
         if (search != null && !search.isBlank()) {
             String cleanSearch = search.trim().replaceAll("\\s{2,}", " ");
-            equipmentsPage = equipmentRepository.findByNameContainingIgnoreCaseOrCodeContainingIgnoreCase(
+            equipmentsPage = equipmentRepository.findByNameContainingIgnoreCaseOrInventoryNumberContainingIgnoreCase(
                     cleanSearch, cleanSearch, pageable
             );
         } else if (filter != null && !filter.isBlank()) {
@@ -37,9 +37,8 @@ public class EquipmentService {
                 case "AUDIOVISUAL" -> equipmentsPage = equipmentRepository.findByCategoryIgnoreCase("Audiovisual", pageable);
                 case "COMPUTO" -> equipmentsPage = equipmentRepository.findByCategoryIgnoreCase("Cómputo", pageable);
                 case "LABORATORIO" -> equipmentsPage = equipmentRepository.findByCategoryIgnoreCase("Laboratorio", pageable);
-                case "Q_SMALL" -> equipmentsPage = equipmentRepository.findByQuantityBetween(1, 10, pageable);
-                case "Q_MEDIUM" -> equipmentsPage = equipmentRepository.findByQuantityBetween(11, 50, pageable);
-                case "Q_LARGE" -> equipmentsPage = equipmentRepository.findByQuantityBetween(51, 10000, pageable);
+                case "ALUMNOS" -> equipmentsPage = equipmentRepository.findByAllowStudents(true, pageable);
+                case "RESTRINGIDO" -> equipmentsPage = equipmentRepository.findByAllowStudents(false, pageable);
                 default -> equipmentsPage = equipmentRepository.findAll(pageable);
             }
         } else {
@@ -57,22 +56,21 @@ public class EquipmentService {
     }
 
     public void createEquipment(CreateEquipmentRequest request) {
+        String inventoryNumber = normalizeCompact(request.getInventoryNumber());
         String name = normalizeText(request.getName());
         String category = normalizeText(request.getCategory());
-        String code = normalizeCompact(request.getCode());
         String description = normalizeText(request.getDescription());
 
-        validateCommon(name, category, code, request.getQuantity(), description, request.getAllowStudents(), request.getCondition());
+        validateCommon(inventoryNumber, name, category, description, request.getAllowStudents(), request.getCondition());
 
-        if (equipmentRepository.existsByCodeIgnoreCase(code)) {
-            throw new RuntimeException("Código no válido");
+        if (equipmentRepository.existsByInventoryNumberIgnoreCase(inventoryNumber)) {
+            throw new RuntimeException("Número de inventario no válido");
         }
 
         Equipment equipment = Equipment.builder()
+                .inventoryNumber(inventoryNumber)
                 .name(name)
                 .category(category)
-                .code(code)
-                .quantity(request.getQuantity())
                 .description(description)
                 .allowStudents(request.getAllowStudents())
                 .active(request.getActive() != null ? request.getActive() : true)
@@ -87,21 +85,20 @@ public class EquipmentService {
         Equipment equipment = equipmentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Equipo no encontrado"));
 
+        String inventoryNumber = normalizeCompact(request.getInventoryNumber());
         String name = normalizeText(request.getName());
         String category = normalizeText(request.getCategory());
-        String code = normalizeCompact(request.getCode());
         String description = normalizeText(request.getDescription());
 
-        validateCommon(name, category, code, request.getQuantity(), description, request.getAllowStudents(), request.getCondition());
+        validateCommon(inventoryNumber, name, category, description, request.getAllowStudents(), request.getCondition());
 
-        if (equipmentRepository.existsByCodeIgnoreCaseAndIdNot(code, id)) {
-            throw new RuntimeException("Código no válido");
+        if (equipmentRepository.existsByInventoryNumberIgnoreCaseAndIdNot(inventoryNumber, id)) {
+            throw new RuntimeException("Número de inventario no válido");
         }
 
+        equipment.setInventoryNumber(inventoryNumber);
         equipment.setName(name);
         equipment.setCategory(category);
-        equipment.setCode(code);
-        equipment.setQuantity(request.getQuantity());
         equipment.setDescription(description);
         equipment.setAllowStudents(request.getAllowStudents());
         equipment.setActive(request.getActive() != null ? request.getActive() : equipment.getActive());
@@ -119,17 +116,20 @@ public class EquipmentService {
     }
 
     private void validateCommon(
+            String inventoryNumber,
             String name,
             String category,
-            String code,
-            Integer quantity,
             String description,
             Boolean allowStudents,
             EquipmentCondition condition
     ) {
-        if (name.isBlank() || category.isBlank() || code.isBlank() || quantity == null
+        if (inventoryNumber.isBlank() || name.isBlank() || category.isBlank()
                 || description.isBlank() || allowStudents == null || condition == null) {
             throw new RuntimeException("Datos inválidos");
+        }
+
+        if (inventoryNumber.length() < 3 || inventoryNumber.length() > 50) {
+            throw new RuntimeException("Número de inventario no válido");
         }
 
         if (name.length() < 3 || category.length() < 3) {
@@ -138,10 +138,6 @@ public class EquipmentService {
 
         if (description.length() < 10 || description.length() > 500) {
             throw new RuntimeException("Descripción no válida");
-        }
-
-        if (quantity < 1 || quantity > 10000) {
-            throw new RuntimeException("Cantidad no válida");
         }
     }
 
@@ -156,10 +152,9 @@ public class EquipmentService {
     private EquipmentListItemResponse toListResponse(Equipment equipment) {
         return EquipmentListItemResponse.builder()
                 .id(equipment.getId())
+                .inventoryNumber(equipment.getInventoryNumber())
                 .name(equipment.getName())
                 .category(equipment.getCategory())
-                .code(equipment.getCode())
-                .quantity(equipment.getQuantity())
                 .description(equipment.getDescription())
                 .allowStudents(equipment.getAllowStudents())
                 .active(equipment.getActive())
@@ -170,10 +165,9 @@ public class EquipmentService {
     private EquipmentDetailResponse toDetailResponse(Equipment equipment) {
         return EquipmentDetailResponse.builder()
                 .id(equipment.getId())
+                .inventoryNumber(equipment.getInventoryNumber())
                 .name(equipment.getName())
                 .category(equipment.getCategory())
-                .code(equipment.getCode())
-                .quantity(equipment.getQuantity())
                 .description(equipment.getDescription())
                 .allowStudents(equipment.getAllowStudents())
                 .active(equipment.getActive())

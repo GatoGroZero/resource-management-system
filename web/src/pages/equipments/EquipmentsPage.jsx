@@ -12,7 +12,7 @@ function EquipmentsPage() {
 
   const [conditionFilter, setConditionFilter] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('')
-  const [quantityFilter, setQuantityFilter] = useState('')
+  const [accessFilter, setAccessFilter] = useState('')
 
   const [backendFilter, setBackendFilter] = useState('')
   const [openCreateModal, setOpenCreateModal] = useState(false)
@@ -42,7 +42,7 @@ function EquipmentsPage() {
     setPage(0)
     setConditionFilter(value)
     setCategoryFilter('')
-    setQuantityFilter('')
+    setAccessFilter('')
 
     if (value === 'DISPONIBLE') setBackendFilter('DISPONIBLE')
     else if (value === 'EN_USO') setBackendFilter('EN_USO')
@@ -54,7 +54,7 @@ function EquipmentsPage() {
     setPage(0)
     setConditionFilter('')
     setCategoryFilter(value)
-    setQuantityFilter('')
+    setAccessFilter('')
 
     if (value === 'AUDIOVISUAL') setBackendFilter('AUDIOVISUAL')
     else if (value === 'COMPUTO') setBackendFilter('COMPUTO')
@@ -62,15 +62,14 @@ function EquipmentsPage() {
     else setBackendFilter('')
   }
 
-  const applyQuantityFilter = (value) => {
+  const applyAccessFilter = (value) => {
     setPage(0)
     setConditionFilter('')
     setCategoryFilter('')
-    setQuantityFilter(value)
+    setAccessFilter(value)
 
-    if (value === 'PEQUENA') setBackendFilter('Q_SMALL')
-    else if (value === 'MEDIANA') setBackendFilter('Q_MEDIUM')
-    else if (value === 'GRANDE') setBackendFilter('Q_LARGE')
+    if (value === 'ALUMNOS') setBackendFilter('ALUMNOS')
+    else if (value === 'RESTRINGIDO') setBackendFilter('RESTRINGIDO')
     else setBackendFilter('')
   }
 
@@ -78,7 +77,7 @@ function EquipmentsPage() {
     setPage(0)
     setConditionFilter('')
     setCategoryFilter('')
-    setQuantityFilter('')
+    setAccessFilter('')
     setBackendFilter('')
   }
 
@@ -156,12 +155,11 @@ function EquipmentsPage() {
           </div>
 
           <div style={fieldStyle}>
-            <label style={labelStyle}>CANTIDAD</label>
-            <select value={quantityFilter} onChange={(e) => applyQuantityFilter(e.target.value)} style={selectStyle}>
-              <option value="">Todas las Cantidades</option>
-              <option value="PEQUENA">1 - 10</option>
-              <option value="MEDIANA">11 - 50</option>
-              <option value="GRANDE">51+</option>
+            <label style={labelStyle}>ACCESO</label>
+            <select value={accessFilter} onChange={(e) => applyAccessFilter(e.target.value)} style={selectStyle}>
+              <option value="">Cualquier Acceso</option>
+              <option value="ALUMNOS">Permite alumnos</option>
+              <option value="RESTRINGIDO">Restringido</option>
             </select>
           </div>
 
@@ -177,10 +175,10 @@ function EquipmentsPage() {
         <table style={tableStyle}>
           <thead>
             <tr>
+              <th style={thStyle}>NÚMERO DE INVENTARIO</th>
               <th style={thStyle}>NOMBRE</th>
-              <th style={thStyle}>CATEGORÍA</th>
-              <th style={thStyle}>CÓDIGO</th>
-              <th style={thStyle}>CANTIDAD</th>
+              <th style={thStyle}>TIPO</th>
+              <th style={thStyle}>ACCESO</th>
               <th style={thStyle}>ESTADO</th>
               <th style={thStyle}>CONDICIÓN</th>
               <th style={thStyle}>ACCIONES</th>
@@ -190,10 +188,10 @@ function EquipmentsPage() {
           <tbody>
             {equipmentsPage?.content?.map((equipment, index) => (
               <tr key={equipment.id} style={index % 2 === 0 ? rowEvenStyle : rowOddStyle}>
+                <td style={tdCodeStyle}>{equipment.inventoryNumber}</td>
                 <td style={tdNameStyle}>{equipment.name}</td>
                 <td style={tdMutedStyle}>{equipment.category}</td>
-                <td style={tdCodeStyle}>{equipment.code}</td>
-                <td style={tdCodeStyle}>{equipment.quantity}</td>
+                <td style={tdMutedStyle}>{equipment.allowStudents ? 'Alumnos' : 'Restringido'}</td>
                 <td style={tdStyle}>
                   <span style={statusStyle(equipment.active)}>
                     {equipment.active ? 'Activo' : 'Inactivo'}
