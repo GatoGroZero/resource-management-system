@@ -131,8 +131,6 @@ function ReservationsPage() {
     <DashboardLayout>
       <div style={headerRowStyle}>
         <div style={titleWrapStyle}>
-          <button type="button" style={backIconStyle}>←</button>
-
           <div>
             <h1 style={titleStyle}>Reservas</h1>
             <p style={subtitleStyle}>Control de solicitudes de espacios físicos y equipamiento institucional.</p>

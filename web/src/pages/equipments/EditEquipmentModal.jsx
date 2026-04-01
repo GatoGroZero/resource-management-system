@@ -1,10 +1,24 @@
 import { useEffect, useState } from 'react'
 import { updateEquipment } from '../../api/equipmentApi'
+import { getSpaces } from '../../api/spaceApi'
 import { showToast } from '../../utils/alertUtils'
 
 function EditEquipmentModal({ equipment, onClose, onSuccess }) {
   const [form, setForm] = useState(null)
+  const [spaces, setSpaces] = useState([])
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    const fetchSpaces = async () => {
+      try {
+        const data = await getSpaces({ page: 0, size: 100 })
+        setSpaces(data.content || [])
+      } catch {
+        /* ignore */
+      }
+    }
+    fetchSpaces()
+  }, [])
 
   useEffect(() => {
     if (equipment) {
@@ -16,6 +30,7 @@ function EditEquipmentModal({ equipment, onClose, onSuccess }) {
         allowStudents: Boolean(equipment.allowStudents),
         condition: equipment.condition || 'DISPONIBLE',
         active: equipment.active,
+        spaceId: equipment.spaceId ? String(equipment.spaceId) : '',
       })
     }
   }, [equipment])
@@ -66,6 +81,7 @@ function EditEquipmentModal({ equipment, onClose, onSuccess }) {
         allowStudents: form.allowStudents,
         condition: form.condition,
         active: form.active,
+        spaceId: form.spaceId ? Number(form.spaceId) : null,
       })
 
       showToast('success', 'Equipo actualizado correctamente')
@@ -121,6 +137,22 @@ function EditEquipmentModal({ equipment, onClose, onSuccess }) {
                 <option value="Cómputo">Cómputo</option>
                 <option value="Audiovisual">Audiovisual</option>
                 <option value="Laboratorio">Laboratorio</option>
+              </select>
+            </div>
+
+            <div style={fieldStyle}>
+              <label style={labelStyle}>Espacio Asociado</label>
+              <select
+                value={form.spaceId}
+                onChange={(e) => handleChange('spaceId', e.target.value)}
+                style={inputStyle}
+              >
+                <option value="">Sin espacio asociado</option>
+                {spaces.map((space) => (
+                  <option key={space.id} value={space.id}>
+                    {space.name}
+                  </option>
+                ))}
               </select>
             </div>
 

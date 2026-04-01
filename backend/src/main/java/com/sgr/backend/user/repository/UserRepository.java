@@ -33,4 +33,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     );
 
     List<User> findByActiveTrue();
+
+    long countByActive(Boolean active);
 }

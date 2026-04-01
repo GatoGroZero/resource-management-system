@@ -3,6 +3,7 @@ import DashboardLayout from '../../components/layout/DashboardLayout'
 import CreateSpaceModal from './CreateSpaceModal'
 import ViewSpaceModal from './ViewSpaceModal'
 import EditSpaceModal from './EditSpaceModal'
+import HistorySpaceModal from './HistorySpaceModal'
 import { getSpaceById, getSpaces, toggleSpaceStatus } from '../../api/spaceApi'
 import { showToast } from '../../utils/alertUtils'
 
@@ -19,6 +20,7 @@ function SpacesPage() {
   const [selectedSpace, setSelectedSpace] = useState(null)
   const [openViewModal, setOpenViewModal] = useState(false)
   const [openEditModal, setOpenEditModal] = useState(false)
+  const [historySpace, setHistorySpace] = useState(null)
 
   const fetchSpaces = async (customPage = page, customFilter = backendFilter) => {
     try {
@@ -111,6 +113,15 @@ function SpacesPage() {
       await toggleSpaceStatus(id)
       showToast('success', 'Estado actualizado correctamente')
       fetchSpaces()
+    } catch {
+      showToast('error', 'Datos inválidos')
+    }
+  }
+
+  const handleHistory = async (id) => {
+    try {
+      const data = await getSpaceById(id)
+      setHistorySpace(data)
     } catch {
       showToast('error', 'Datos inválidos')
     }
@@ -211,15 +222,16 @@ function SpacesPage() {
                   </span>
                 </td>
                 <td style={tdStyle}>
-                  <span style={availabilityStyle(space.availability)}>
+                  <span style={availabilityBadgeStyle(space.availability)}>
                     {formatAvailability(space.availability)}
                   </span>
                 </td>
                 <td style={tdStyle}>
                   <div style={actionsIconsStyle}>
-                    <button type="button" onClick={() => handleView(space.id)} style={viewButtonStyle}>👁</button>
-                    <button type="button" onClick={() => handleEdit(space.id)} style={editButtonStyle}>✏</button>
-                    <button type="button" onClick={() => handleToggleStatus(space.id)} style={toggleButtonStyle(space.active)}>⏻</button>
+                    <button type="button" onClick={() => handleView(space.id)} style={viewButtonStyle} title="Ver detalle">👁</button>
+                    <button type="button" onClick={() => handleEdit(space.id)} style={editButtonStyle} title="Editar">✏</button>
+                    <button type="button" onClick={() => handleHistory(space.id)} style={historyButtonStyle} title="Historial">🕒</button>
+                    <button type="button" onClick={() => handleToggleStatus(space.id)} style={toggleButtonStyle(space.active)} title={space.active ? 'Desactivar' : 'Activar'}>⏻</button>
                   </div>
                 </td>
               </tr>
@@ -262,6 +274,13 @@ function SpacesPage() {
           space={selectedSpace}
           onClose={() => setOpenEditModal(false)}
           onSuccess={() => fetchSpaces()}
+        />
+      )}
+
+      {historySpace && (
+        <HistorySpaceModal
+          space={historySpace}
+          onClose={() => setHistorySpace(null)}
         />
       )}
     </DashboardLayout>
@@ -440,7 +459,7 @@ const statusStyle = (active) => ({
   display: 'inline-block',
 })
 
-const availabilityStyle = (availability) => {
+const availabilityBadgeStyle = (availability) => {
   if (availability === 'DISPONIBLE') {
     return {
       background: '#dcfce7',
@@ -506,6 +525,13 @@ const editButtonStyle = {
   background: '#f5f3ff',
   color: '#7c3aed',
   borderColor: '#ddd6fe',
+}
+
+const historyButtonStyle = {
+  ...baseIconButtonStyle,
+  background: '#eff6ff',
+  color: '#3b82f6',
+  borderColor: '#bfdbfe',
 }
 
 const toggleButtonStyle = (active) => ({

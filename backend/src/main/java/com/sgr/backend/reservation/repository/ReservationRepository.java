@@ -19,6 +19,12 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 
     Page<Reservation> findByResourceType(ReservationResourceType resourceType, Pageable pageable);
 
+    List<Reservation> findBySpaceIdOrderByReservationDateDesc(Long spaceId);
+
+    List<Reservation> findByEquipmentIdOrderByReservationDateDesc(Long equipmentId);
+
+    long countByStatus(ReservationStatus status);
+
     boolean existsBySpaceAndReservationDateAndStatusInAndStartTimeLessThanAndEndTimeGreaterThan(
             Space space,
             LocalDate reservationDate,
@@ -34,4 +40,10 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
             LocalTime endTime,
             LocalTime startTime
     );
+
+    Page<Reservation> findByStatusIn(List<ReservationStatus> statuses, Pageable pageable);
+
+    Page<Reservation> findByStatusInAndResourceType(List<ReservationStatus> statuses, ReservationResourceType resourceType, Pageable pageable);
+
+    Page<Reservation> findByStatusInAndStatus(List<ReservationStatus> statusList, ReservationStatus status, Pageable pageable);
 }

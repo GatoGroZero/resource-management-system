@@ -7,6 +7,8 @@ import com.sgr.backend.equipment.dto.UpdateEquipmentRequest;
 import com.sgr.backend.equipment.entity.Equipment;
 import com.sgr.backend.equipment.entity.EquipmentCondition;
 import com.sgr.backend.equipment.repository.EquipmentRepository;
+import com.sgr.backend.space.entity.Space;
+import com.sgr.backend.space.repository.SpaceRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
@@ -18,6 +20,7 @@ import java.time.LocalDateTime;
 public class EquipmentService {
 
     private final EquipmentRepository equipmentRepository;
+    private final SpaceRepository spaceRepository;
 
     public Page<EquipmentListItemResponse> getEquipments(int page, int size, String filter, String search) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
@@ -67,6 +70,12 @@ public class EquipmentService {
             throw new RuntimeException("Número de inventario no válido");
         }
 
+        Space space = null;
+        if (request.getSpaceId() != null) {
+            space = spaceRepository.findById(request.getSpaceId())
+                    .orElseThrow(() -> new RuntimeException("Espacio no encontrado"));
+        }
+
         Equipment equipment = Equipment.builder()
                 .inventoryNumber(inventoryNumber)
                 .name(name)
@@ -75,6 +84,7 @@ public class EquipmentService {
                 .allowStudents(request.getAllowStudents())
                 .active(request.getActive() != null ? request.getActive() : true)
                 .condition(request.getCondition())
+                .space(space)
                 .createdAt(LocalDateTime.now())
                 .build();
 
@@ -96,6 +106,12 @@ public class EquipmentService {
             throw new RuntimeException("Número de inventario no válido");
         }
 
+        Space space = null;
+        if (request.getSpaceId() != null) {
+            space = spaceRepository.findById(request.getSpaceId())
+                    .orElseThrow(() -> new RuntimeException("Espacio no encontrado"));
+        }
+
         equipment.setInventoryNumber(inventoryNumber);
         equipment.setName(name);
         equipment.setCategory(category);
@@ -103,6 +119,7 @@ public class EquipmentService {
         equipment.setAllowStudents(request.getAllowStudents());
         equipment.setActive(request.getActive() != null ? request.getActive() : equipment.getActive());
         equipment.setCondition(request.getCondition());
+        equipment.setSpace(space);
 
         equipmentRepository.save(equipment);
     }
@@ -159,6 +176,8 @@ public class EquipmentService {
                 .allowStudents(equipment.getAllowStudents())
                 .active(equipment.getActive())
                 .condition(equipment.getCondition().name())
+                .spaceId(equipment.getSpace() != null ? equipment.getSpace().getId() : null)
+                .spaceName(equipment.getSpace() != null ? equipment.getSpace().getName() : null)
                 .build();
     }
 
@@ -172,6 +191,8 @@ public class EquipmentService {
                 .allowStudents(equipment.getAllowStudents())
                 .active(equipment.getActive())
                 .condition(equipment.getCondition().name())
+                .spaceId(equipment.getSpace() != null ? equipment.getSpace().getId() : null)
+                .spaceName(equipment.getSpace() != null ? equipment.getSpace().getName() : null)
                 .build();
     }
 }

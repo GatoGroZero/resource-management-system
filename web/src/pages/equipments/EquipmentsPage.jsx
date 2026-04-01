@@ -3,6 +3,7 @@ import DashboardLayout from '../../components/layout/DashboardLayout'
 import CreateEquipmentModal from './CreateEquipmentModal'
 import ViewEquipmentModal from './ViewEquipmentModal'
 import EditEquipmentModal from './EditEquipmentModal'
+import HistoryEquipmentModal from './HistoryEquipmentModal'
 import { getEquipmentById, getEquipments, toggleEquipmentStatus } from '../../api/equipmentApi'
 import { showToast } from '../../utils/alertUtils'
 
@@ -19,6 +20,7 @@ function EquipmentsPage() {
   const [selectedEquipment, setSelectedEquipment] = useState(null)
   const [openViewModal, setOpenViewModal] = useState(false)
   const [openEditModal, setOpenEditModal] = useState(false)
+  const [historyEquipment, setHistoryEquipment] = useState(null)
 
   const fetchEquipments = async (customPage = page, customFilter = backendFilter) => {
     try {
@@ -119,6 +121,15 @@ function EquipmentsPage() {
     }
   }
 
+  const handleHistory = async (id) => {
+    try {
+      const data = await getEquipmentById(id)
+      setHistoryEquipment(data)
+    } catch {
+      showToast('error', 'Datos inválidos')
+    }
+  }
+
   return (
     <DashboardLayout>
       <div style={headerRowStyle}>
@@ -178,6 +189,7 @@ function EquipmentsPage() {
               <th style={thStyle}>NÚMERO DE INVENTARIO</th>
               <th style={thStyle}>NOMBRE</th>
               <th style={thStyle}>TIPO</th>
+              <th style={thStyle}>ESPACIO</th>
               <th style={thStyle}>ACCESO</th>
               <th style={thStyle}>ESTADO</th>
               <th style={thStyle}>CONDICIÓN</th>
@@ -191,6 +203,7 @@ function EquipmentsPage() {
                 <td style={tdCodeStyle}>{equipment.inventoryNumber}</td>
                 <td style={tdNameStyle}>{equipment.name}</td>
                 <td style={tdMutedStyle}>{equipment.category}</td>
+                <td style={tdMutedStyle}>{equipment.spaceName || '—'}</td>
                 <td style={tdMutedStyle}>{equipment.allowStudents ? 'Alumnos' : 'Restringido'}</td>
                 <td style={tdStyle}>
                   <span style={statusStyle(equipment.active)}>
@@ -198,15 +211,16 @@ function EquipmentsPage() {
                   </span>
                 </td>
                 <td style={tdStyle}>
-                  <span style={conditionStyle(equipment.condition)}>
+                  <span style={conditionBadgeStyle(equipment.condition)}>
                     {formatCondition(equipment.condition)}
                   </span>
                 </td>
                 <td style={tdStyle}>
                   <div style={actionsIconsStyle}>
-                    <button type="button" onClick={() => handleView(equipment.id)} style={viewButtonStyle}>👁</button>
-                    <button type="button" onClick={() => handleEdit(equipment.id)} style={editButtonStyle}>✏</button>
-                    <button type="button" onClick={() => handleToggleStatus(equipment.id)} style={toggleButtonStyle(equipment.active)}>⏻</button>
+                    <button type="button" onClick={() => handleView(equipment.id)} style={viewButtonStyle} title="Ver detalle">👁</button>
+                    <button type="button" onClick={() => handleEdit(equipment.id)} style={editButtonStyle} title="Editar">✏</button>
+                    <button type="button" onClick={() => handleHistory(equipment.id)} style={historyButtonStyle} title="Historial">🕒</button>
+                    <button type="button" onClick={() => handleToggleStatus(equipment.id)} style={toggleButtonStyle(equipment.active)} title={equipment.active ? 'Desactivar' : 'Activar'}>⏻</button>
                   </div>
                 </td>
               </tr>
@@ -247,6 +261,13 @@ function EquipmentsPage() {
           onSuccess={() => fetchEquipments()}
         />
       )}
+
+      {historyEquipment && (
+        <HistoryEquipmentModal
+          equipment={historyEquipment}
+          onClose={() => setHistoryEquipment(null)}
+        />
+      )}
     </DashboardLayout>
   )
 }
@@ -278,7 +299,7 @@ const tdNameStyle = { ...tdStyle, color: '#0b2f63', fontWeight: 700 }
 const tdCodeStyle = { ...tdStyle, color: '#1e293b', fontWeight: 700 }
 const tdMutedStyle = { ...tdStyle, color: '#64748b' }
 const statusStyle = (active) => ({ background: active ? '#dcfce7' : '#fee2e2', color: active ? '#15803d' : '#dc2626', padding: '5px 10px', borderRadius: '999px', fontSize: '12px', fontWeight: 700, display: 'inline-block' })
-const conditionStyle = (condition) => {
+const conditionBadgeStyle = (condition) => {
   if (condition === 'DISPONIBLE') return { background: '#dcfce7', color: '#15803d', padding: '5px 10px', borderRadius: '999px', fontSize: '12px', fontWeight: 700, display: 'inline-block' }
   if (condition === 'EN_USO') return { background: '#dbeafe', color: '#2563eb', padding: '5px 10px', borderRadius: '999px', fontSize: '12px', fontWeight: 700, display: 'inline-block' }
   return { background: '#fee2e2', color: '#ea580c', padding: '5px 10px', borderRadius: '999px', fontSize: '12px', fontWeight: 700, display: 'inline-block' }
@@ -287,6 +308,7 @@ const actionsIconsStyle = { display: 'flex', gap: '8px', alignItems: 'center' }
 const baseIconButtonStyle = { width: '34px', height: '34px', borderRadius: '10px', border: '1px solid transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px' }
 const viewButtonStyle = { ...baseIconButtonStyle, background: '#eef6ff', color: '#2563eb', borderColor: '#bfdbfe' }
 const editButtonStyle = { ...baseIconButtonStyle, background: '#f5f3ff', color: '#7c3aed', borderColor: '#ddd6fe' }
+const historyButtonStyle = { ...baseIconButtonStyle, background: '#eff6ff', color: '#3b82f6', borderColor: '#bfdbfe' }
 const toggleButtonStyle = (active) => ({ ...baseIconButtonStyle, background: active ? '#fef2f2' : '#ecfdf3', color: active ? '#dc2626' : '#16a34a', borderColor: active ? '#fecaca' : '#bbf7d0' })
 const footerRowStyle = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 18px', background: '#ffffff' }
 const pageTextStyle = { color: '#64748b', fontSize: '14px', fontWeight: 500 }

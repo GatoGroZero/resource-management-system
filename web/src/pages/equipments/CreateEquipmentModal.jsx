@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createEquipment } from '../../api/equipmentApi'
+import { getSpaces } from '../../api/spaceApi'
 import { showToast } from '../../utils/alertUtils'
 
 function CreateEquipmentModal({ onClose, onSuccess }) {
@@ -11,9 +12,23 @@ function CreateEquipmentModal({ onClose, onSuccess }) {
     allowStudents: false,
     condition: 'DISPONIBLE',
     active: true,
+    spaceId: '',
   })
 
+  const [spaces, setSpaces] = useState([])
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    const fetchSpaces = async () => {
+      try {
+        const data = await getSpaces({ page: 0, size: 100 })
+        setSpaces(data.content || [])
+      } catch {
+        /* ignore */
+      }
+    }
+    fetchSpaces()
+  }, [])
 
   const handleChange = (field, value) => {
     if (field === 'inventoryNumber') {
@@ -59,6 +74,7 @@ function CreateEquipmentModal({ onClose, onSuccess }) {
         allowStudents: form.allowStudents,
         condition: form.condition,
         active: form.active,
+        spaceId: form.spaceId ? Number(form.spaceId) : null,
       })
 
       showToast('success', 'Equipo registrado correctamente')
@@ -114,6 +130,22 @@ function CreateEquipmentModal({ onClose, onSuccess }) {
                 <option value="Cómputo">Cómputo</option>
                 <option value="Audiovisual">Audiovisual</option>
                 <option value="Laboratorio">Laboratorio</option>
+              </select>
+            </div>
+
+            <div style={fieldStyle}>
+              <label style={labelStyle}>Espacio Asociado</label>
+              <select
+                value={form.spaceId}
+                onChange={(e) => handleChange('spaceId', e.target.value)}
+                style={inputStyle}
+              >
+                <option value="">Sin espacio asociado</option>
+                {spaces.map((space) => (
+                  <option key={space.id} value={space.id}>
+                    {space.name}
+                  </option>
+                ))}
               </select>
             </div>
 

@@ -1,5 +1,6 @@
 package com.sgr.backend.equipment.entity;
 
+import com.sgr.backend.space.entity.Space;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -39,6 +40,10 @@ public class Equipment {
     @Enumerated(EnumType.STRING)
     @Column(name = "equipment_condition", nullable = false)
     private EquipmentCondition condition;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "space_id")
+    private Space space;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;

@@ -1,10 +1,17 @@
 import { Navigate, Outlet } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
 
 function RoleRoute({ allowedRoles }) {
-  const { token, user } = useAuth()
+  const token = localStorage.getItem('token')
+  const userRaw = localStorage.getItem('user')
 
-  if (!token) {
+  if (!token || !userRaw) {
+    return <Navigate to="/login" replace />
+  }
+
+  let user = null
+  try {
+    user = JSON.parse(userRaw)
+  } catch {
     return <Navigate to="/login" replace />
   }
 

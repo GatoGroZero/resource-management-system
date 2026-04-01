@@ -25,7 +25,7 @@ function LoginPage() {
       if (response.role === 'ADMIN') {
         navigate('/reservations')
       } else {
-        navigate('/portal')
+        navigate('/dashboard')
       }
     } catch (error) {
       const message = error?.response?.data?.message || 'Correo o contraseña incorrectos'

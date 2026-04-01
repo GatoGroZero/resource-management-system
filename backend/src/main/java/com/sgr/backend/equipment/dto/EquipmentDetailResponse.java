@@ -14,4 +14,6 @@ public class EquipmentDetailResponse {
     private Boolean allowStudents;
     private Boolean active;
     private String condition;
+    private Long spaceId;
+    private String spaceName;
 }

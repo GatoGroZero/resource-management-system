@@ -18,6 +18,16 @@ export async function getReservationOptions() {
   return response.data
 }
 
+export async function getReservationsBySpace(spaceId) {
+  const response = await axiosClient.get(`/api/reservations/by-space/${spaceId}`)
+  return response.data
+}
+
+export async function getReservationsByEquipment(equipmentId) {
+  const response = await axiosClient.get(`/api/reservations/by-equipment/${equipmentId}`)
+  return response.data
+}
+
 export async function createReservation(data) {
   const response = await axiosClient.post('/api/reservations', data)
   return response.data

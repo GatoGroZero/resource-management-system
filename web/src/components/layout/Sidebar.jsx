@@ -1,13 +1,39 @@
-import { NavLink } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
 
 function Sidebar() {
-  const items = [
+  const navigate = useNavigate()
+  const userRaw = localStorage.getItem('user')
+  let user = null
+  try {
+    user = JSON.parse(userRaw)
+  } catch {
+    /* ignore */
+  }
+
+  const isAdmin = user?.role === 'ADMIN'
+
+  const adminItems = [
     { label: 'Usuarios', path: '/users', icon: '👥' },
-    { label: 'Espacios', path: '/spaces', icon: '📋' },
+    { label: 'Espacios', path: '/spaces', icon: '🏢' },
     { label: 'Inventario', path: '/inventory', icon: '📦' },
     { label: 'Reservas', path: '/reservations', icon: '🗓️' },
-    { label: 'Auditoría', path: '/audit', icon: '🕘' },
+    { label: 'Auditoría', path: '/history', icon: '🕘' },
   ]
+
+  const userItems = [
+    { label: 'Inicio', path: '/dashboard', icon: '🏠' },
+    { label: 'Nueva Solicitud', path: '/new-request', icon: '➕' },
+    { label: 'Mi Historial', path: '/requests', icon: '🕘' },
+    { label: 'Mi Perfil', path: '/profile', icon: '👤' },
+  ]
+
+  const items = isAdmin ? adminItems : userItems
+
+  const handleLogout = () => {
+    localStorage.removeItem('token')
+    localStorage.removeItem('user')
+    navigate('/login')
+  }
 
   return (
     <aside style={sidebarStyle}>
@@ -31,6 +57,13 @@ function Sidebar() {
           </NavLink>
         ))}
       </nav>
+
+      <div style={bottomStyle}>
+        <button type="button" onClick={handleLogout} style={logoutButtonStyle}>
+          <span style={iconStyle}>🚪</span>
+          <span>Cerrar Sesión</span>
+        </button>
+      </div>
     </aside>
   )
 }
@@ -43,6 +76,8 @@ const sidebarStyle = {
   minHeight: '100vh',
   padding: '16px 10px',
   boxSizing: 'border-box',
+  display: 'flex',
+  flexDirection: 'column',
 }
 
 const brandStyle = {
@@ -69,6 +104,7 @@ const navStyle = {
   display: 'flex',
   flexDirection: 'column',
   gap: '8px',
+  flex: 1,
 }
 
 const linkStyle = {
@@ -80,6 +116,7 @@ const linkStyle = {
   padding: '13px 12px',
   borderRadius: '12px',
   fontWeight: 500,
+  fontSize: '14px',
 }
 
 const activeLinkStyle = {
@@ -92,6 +129,30 @@ const iconStyle = {
   width: '18px',
   display: 'inline-flex',
   justifyContent: 'center',
+}
+
+const bottomStyle = {
+  borderTop: '1px solid rgba(255,255,255,0.15)',
+  paddingTop: '12px',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '4px',
+}
+
+const logoutButtonStyle = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: '10px',
+  color: '#fecaca',
+  background: 'none',
+  border: 'none',
+  padding: '13px 12px',
+  borderRadius: '12px',
+  fontWeight: 500,
+  fontSize: '14px',
+  cursor: 'pointer',
+  width: '100%',
+  textAlign: 'left',
 }
 
 export default Sidebar
