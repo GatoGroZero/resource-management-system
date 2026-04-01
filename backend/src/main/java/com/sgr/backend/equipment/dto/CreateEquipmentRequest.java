@@ -14,4 +14,5 @@ public class CreateEquipmentRequest {
     private Boolean allowStudents;
     private Boolean active;
     private EquipmentCondition condition;
+    private Long spaceId;
 }

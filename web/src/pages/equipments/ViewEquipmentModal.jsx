@@ -13,6 +13,7 @@ function ViewEquipmentModal({ equipment, onClose }) {
           <Info label="Número de Inventario" value={equipment.inventoryNumber} />
           <Info label="Nombre del Equipo" value={equipment.name} />
           <Info label="Tipo" value={equipment.category} />
+          <Info label="Espacio Asociado" value={equipment.spaceName || 'Sin espacio asociado'} />
           <Info label="Descripción" value={equipment.description || '—'} />
           <Info label="Acceso para estudiantes" value={equipment.allowStudents ? 'Permitido' : 'Restringido'} />
           <Info label="Estado" value={equipment.active ? 'Activo' : 'Inactivo'} />

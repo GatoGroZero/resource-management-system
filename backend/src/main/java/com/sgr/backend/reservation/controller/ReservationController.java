@@ -7,6 +7,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/reservations")
 @RequiredArgsConstructor
@@ -34,6 +36,16 @@ public class ReservationController {
         return ResponseEntity.ok(reservationService.getFormOptions());
     }
 
+    @GetMapping("/by-space/{spaceId}")
+    public ResponseEntity<List<ReservationListItemResponse>> getBySpace(@PathVariable Long spaceId) {
+        return ResponseEntity.ok(reservationService.getReservationsBySpaceId(spaceId));
+    }
+
+    @GetMapping("/by-equipment/{equipmentId}")
+    public ResponseEntity<List<ReservationListItemResponse>> getByEquipment(@PathVariable Long equipmentId) {
+        return ResponseEntity.ok(reservationService.getReservationsByEquipmentId(equipmentId));
+    }
+
     @PostMapping
     public ResponseEntity<?> createReservation(@RequestBody CreateReservationRequest request) {
         reservationService.createReservation(request);
@@ -56,5 +68,14 @@ public class ReservationController {
     public ResponseEntity<?> cancelReservation(@PathVariable Long id) {
         reservationService.cancelReservation(id);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/audit")
+    public ResponseEntity<Page<ReservationListItemResponse>> getAuditRecords(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String filter
+    ) {
+        return ResponseEntity.ok(reservationService.getAuditRecords(page, size, filter));
     }
 }

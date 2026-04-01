@@ -1,6 +1,7 @@
 package com.sgr.backend.user.controller;
 
 import com.sgr.backend.user.dto.CreateUserRequest;
+import com.sgr.backend.user.dto.UpdateProfileRequest;
 import com.sgr.backend.user.dto.UpdateUserRequest;
 import com.sgr.backend.user.dto.UserDetailResponse;
 import com.sgr.backend.user.dto.UserListItemResponse;
@@ -48,6 +49,12 @@ public class UserController {
     @PatchMapping("/{id}/toggle-status")
     public ResponseEntity<?> toggleUserStatus(@PathVariable Long id) {
         userService.toggleUserStatus(id);
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/profile/{id}")
+    public ResponseEntity<?> updateProfile(@PathVariable Long id, @RequestBody UpdateProfileRequest request) {
+        userService.updateProfile(id, request);
         return ResponseEntity.ok().build();
     }
 }

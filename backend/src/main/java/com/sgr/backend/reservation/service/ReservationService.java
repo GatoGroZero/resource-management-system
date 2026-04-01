@@ -13,6 +13,8 @@ import com.sgr.backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
+import java.util.List;
+
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -266,5 +268,45 @@ public class ReservationService {
                 .status(reservation.getStatus().name())
                 .adminComment(reservation.getAdminComment())
                 .build();
+    }
+
+    public List<ReservationListItemResponse> getReservationsBySpaceId(Long spaceId) {
+        return reservationRepository.findBySpaceIdOrderByReservationDateDesc(spaceId)
+                .stream()
+                .map(this::toListResponse)
+                .toList();
+    }
+
+    public List<ReservationListItemResponse> getReservationsByEquipmentId(Long equipmentId) {
+        return reservationRepository.findByEquipmentIdOrderByReservationDateDesc(equipmentId)
+                .stream()
+                .map(this::toListResponse)
+                .toList();
+    }
+    public Page<ReservationListItemResponse> getAuditRecords(int page, int size, String filter) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
+
+        List<ReservationStatus> auditStatuses = List.of(
+                ReservationStatus.APROBADA,
+                ReservationStatus.RECHAZADA,
+                ReservationStatus.CANCELADA
+        );
+
+        Page<Reservation> reservationsPage;
+
+        if (filter != null && !filter.isBlank()) {
+            switch (filter.toUpperCase()) {
+                case "SPACE" -> reservationsPage = reservationRepository.findByStatusInAndResourceType(auditStatuses, ReservationResourceType.SPACE, pageable);
+                case "EQUIPMENT" -> reservationsPage = reservationRepository.findByStatusInAndResourceType(auditStatuses, ReservationResourceType.EQUIPMENT, pageable);
+                case "APROBADA" -> reservationsPage = reservationRepository.findByStatus(ReservationStatus.APROBADA, pageable);
+                case "RECHAZADA" -> reservationsPage = reservationRepository.findByStatus(ReservationStatus.RECHAZADA, pageable);
+                case "CANCELADA" -> reservationsPage = reservationRepository.findByStatus(ReservationStatus.CANCELADA, pageable);
+                default -> reservationsPage = reservationRepository.findByStatusIn(auditStatuses, pageable);
+            }
+        } else {
+            reservationsPage = reservationRepository.findByStatusIn(auditStatuses, pageable);
+        }
+
+        return reservationsPage.map(this::toListResponse);
     }
 }

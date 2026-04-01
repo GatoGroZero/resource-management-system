@@ -2,6 +2,7 @@ package com.sgr.backend.user.service;
 
 import com.sgr.backend.common.enums.Role;
 import com.sgr.backend.user.dto.CreateUserRequest;
+import com.sgr.backend.user.dto.UpdateProfileRequest;
 import com.sgr.backend.user.dto.UpdateUserRequest;
 import com.sgr.backend.user.dto.UserDetailResponse;
 import com.sgr.backend.user.dto.UserListItemResponse;
@@ -26,7 +27,7 @@ public class UserService {
 
     private static final Pattern UTEZ_EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9._%+-]+@utez\\.edu\\.mx$");
     private static final Pattern PHONE_PATTERN = Pattern.compile("^\\d{10}$");
-    private static final Pattern NAME_PATTERN = Pattern.compile("^[A-Za-zÁÉÍÓÚáéíóúÑñÜü]+( [A-Za-zÁÉÍÓÚáéíóúÑñÜü]+)?$");
+    private static final Pattern NAME_PATTERN = Pattern.compile("^[A-Za-záéíóúÁÉÍÓÚñÑ]+( [A-Za-záéíóúÁÉÍÓÚñÑ]+)?$");
     private static final Pattern IDENTIFIER_PATTERN = Pattern.compile("^\\S+$");
 
     public Page<UserListItemResponse> getUsers(int page, int size, String filter, String search) {
@@ -153,6 +154,25 @@ public class UserService {
         }
 
         user.setActive(!user.getActive());
+        userRepository.save(user);
+    }
+
+    public void updateProfile(Long userId, UpdateProfileRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        if (request.getName() != null && !request.getName().isBlank()) {
+            user.setName(request.getName().trim().replaceAll("\\s{2,}", " "));
+        }
+
+        if (request.getLastName() != null && !request.getLastName().isBlank()) {
+            user.setLastName(request.getLastName().trim().replaceAll("\\s{2,}", " "));
+        }
+
+        if (request.getPhone() != null) {
+            user.setPhone(request.getPhone().trim());
+        }
+
         userRepository.save(user);
     }
 
