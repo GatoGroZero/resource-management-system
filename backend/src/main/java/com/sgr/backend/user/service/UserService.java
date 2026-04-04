@@ -1,11 +1,7 @@
 package com.sgr.backend.user.service;
 
 import com.sgr.backend.common.enums.Role;
-import com.sgr.backend.user.dto.CreateUserRequest;
-import com.sgr.backend.user.dto.UpdateProfileRequest;
-import com.sgr.backend.user.dto.UpdateUserRequest;
-import com.sgr.backend.user.dto.UserDetailResponse;
-import com.sgr.backend.user.dto.UserListItemResponse;
+import com.sgr.backend.user.dto.*;
 import com.sgr.backend.user.entity.User;
 import com.sgr.backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -314,4 +310,36 @@ public class UserService {
             Role role,
             String password
     ) {}
+
+    public void changePassword(Long userId, ChangePasswordRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        if (request.getCurrentPassword() == null || request.getCurrentPassword().isBlank()) {
+            throw new RuntimeException("Debes ingresar tu contraseña actual");
+        }
+
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+            throw new RuntimeException("La contraseña actual es incorrecta");
+        }
+
+        if (request.getNewPassword() == null || request.getNewPassword().isBlank()) {
+            throw new RuntimeException("La nueva contraseña es obligatoria");
+        }
+
+        if (request.getNewPassword().length() < 8) {
+            throw new RuntimeException("La nueva contraseña debe tener al menos 8 caracteres");
+        }
+
+        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+            throw new RuntimeException("Las contraseñas no coinciden");
+        }
+
+        if (request.getCurrentPassword().equals(request.getNewPassword())) {
+            throw new RuntimeException("La nueva contraseña debe ser diferente a la actual");
+        }
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+    }
 }
