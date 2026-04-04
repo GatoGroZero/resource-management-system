@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/equipments")
@@ -49,5 +50,9 @@ public class EquipmentController {
     public ResponseEntity<?> toggleEquipmentStatus(@PathVariable Long id) {
         equipmentService.toggleEquipmentStatus(id);
         return ResponseEntity.ok().build();
+    }
+    @GetMapping("/by-space/{spaceId}")
+    public ResponseEntity<List<EquipmentListItemResponse>> getBySpace(@PathVariable Long spaceId) {
+        return ResponseEntity.ok(equipmentService.getEquipmentsBySpaceId(spaceId));
     }
 }

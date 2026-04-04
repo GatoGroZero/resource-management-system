@@ -45,9 +45,11 @@ function Topbar() {
   )
 }
 
+
+
 function formatRole(role) {
   if (role === 'ADMIN') return 'Administrador'
-  if (role === 'STAFF') return 'Personal'
+  if (role === 'STAFF') return 'Personal UTEZ'
   return 'Estudiante'
 }
 

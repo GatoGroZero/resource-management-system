@@ -45,6 +45,9 @@ public class Reservation {
     @Column(nullable = false)
     private LocalTime startTime;
 
+    @Column
+    private LocalDate endDate;
+
     @Column(nullable = false)
     private LocalTime endTime;
 
@@ -60,6 +63,14 @@ public class Reservation {
 
     @Column(length = 500)
     private String adminComment;
+
+    @Column(length = 50)
+    private String returnCondition;
+
+    @Column(length = 500)
+    private String returnDescription;
+
+    private LocalDateTime returnedAt;
 
     @Column(nullable = false)
     private LocalDateTime createdAt;

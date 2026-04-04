@@ -46,4 +46,9 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     Page<Reservation> findByStatusInAndResourceType(List<ReservationStatus> statuses, ReservationResourceType resourceType, Pageable pageable);
 
     Page<Reservation> findByStatusInAndStatus(List<ReservationStatus> statusList, ReservationStatus status, Pageable pageable);
+    Page<Reservation> findByRequesterId(Long requesterId, Pageable pageable);
+
+    Page<Reservation> findByRequesterIdAndStatus(Long requesterId, ReservationStatus status, Pageable pageable);
+
+    
 }

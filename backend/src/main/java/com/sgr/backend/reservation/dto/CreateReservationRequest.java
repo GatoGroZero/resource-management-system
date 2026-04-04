@@ -15,6 +15,7 @@ public class CreateReservationRequest {
     private Long resourceId;
     private LocalDate reservationDate;
     private LocalTime startTime;
+    private LocalDate endDate;
     private LocalTime endTime;
     private String purpose;
     private String observations;

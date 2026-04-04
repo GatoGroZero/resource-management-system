@@ -3,7 +3,6 @@ import axiosClient from './axiosClient'
 export async function getReservations({ page = 0, size = 10, filter = '' }) {
   const params = { page, size }
   if (filter) params.filter = filter
-
   const response = await axiosClient.get('/api/reservations', { params })
   return response.data
 }
@@ -45,5 +44,34 @@ export async function rejectReservation(id, adminComment = '') {
 
 export async function cancelReservation(id) {
   const response = await axiosClient.patch(`/api/reservations/${id}/cancel`)
+  return response.data
+}
+
+// --- Solicitante ---
+
+export async function getMyReservations({ userId, page = 0, size = 10, filter = '' }) {
+  const params = { userId, page, size }
+  if (filter) params.filter = filter
+  const response = await axiosClient.get('/api/reservations/my', { params })
+  return response.data
+}
+
+export async function getMyReservationById(id, userId) {
+  const response = await axiosClient.get(`/api/reservations/my/${id}`, { params: { userId } })
+  return response.data
+}
+
+export async function updateMyReservation(id, userId, data) {
+  const response = await axiosClient.put(`/api/reservations/my/${id}?userId=${userId}`, data)
+  return response.data
+}
+
+export async function cancelMyReservation(id, userId) {
+  const response = await axiosClient.patch(`/api/reservations/my/${id}/cancel?userId=${userId}`)
+  return response.data
+}
+
+export async function returnReservation(id, data) {
+  const response = await axiosClient.patch(`/api/reservations/${id}/return`, data)
   return response.data
 }

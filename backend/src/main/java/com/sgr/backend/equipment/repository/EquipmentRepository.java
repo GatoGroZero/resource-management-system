@@ -27,4 +27,5 @@ public interface EquipmentRepository extends JpaRepository<Equipment, Long> {
     );
 
     List<Equipment> findByActiveTrue();
+    List<Equipment> findBySpaceIdAndActiveTrue(Long spaceId);
 }

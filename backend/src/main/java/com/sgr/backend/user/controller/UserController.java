@@ -1,10 +1,6 @@
 package com.sgr.backend.user.controller;
 
-import com.sgr.backend.user.dto.CreateUserRequest;
-import com.sgr.backend.user.dto.UpdateProfileRequest;
-import com.sgr.backend.user.dto.UpdateUserRequest;
-import com.sgr.backend.user.dto.UserDetailResponse;
-import com.sgr.backend.user.dto.UserListItemResponse;
+import com.sgr.backend.user.dto.*;
 import com.sgr.backend.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -55,6 +51,12 @@ public class UserController {
     @PutMapping("/profile/{id}")
     public ResponseEntity<?> updateProfile(@PathVariable Long id, @RequestBody UpdateProfileRequest request) {
         userService.updateProfile(id, request);
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/profile/{id}/change-password")
+    public ResponseEntity<?> changePassword(@PathVariable Long id, @RequestBody ChangePasswordRequest request) {
+        userService.changePassword(id, request);
         return ResponseEntity.ok().build();
     }
 }
