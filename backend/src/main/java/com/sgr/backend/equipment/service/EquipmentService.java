@@ -14,6 +14,8 @@ import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
+
 
 @Service
 @RequiredArgsConstructor
@@ -194,5 +196,11 @@ public class EquipmentService {
                 .spaceId(equipment.getSpace() != null ? equipment.getSpace().getId() : null)
                 .spaceName(equipment.getSpace() != null ? equipment.getSpace().getName() : null)
                 .build();
+    }
+    public List<EquipmentListItemResponse> getEquipmentsBySpaceId(Long spaceId) {
+        return equipmentRepository.findBySpaceIdAndActiveTrue(spaceId)
+                .stream()
+                .map(this::toListResponse)
+                .toList();
     }
 }

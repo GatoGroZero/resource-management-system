@@ -3,6 +3,7 @@ package com.sgr.backend.reservation.service;
 import com.sgr.backend.common.enums.Role;
 import com.sgr.backend.equipment.entity.Equipment;
 import com.sgr.backend.equipment.repository.EquipmentRepository;
+import com.sgr.backend.notification.EmailService;
 import com.sgr.backend.reservation.dto.*;
 import com.sgr.backend.reservation.entity.*;
 import com.sgr.backend.reservation.repository.ReservationRepository;
@@ -13,12 +14,9 @@ import com.sgr.backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
-import java.util.List;
-
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.List;
 
 @Service
@@ -29,66 +27,38 @@ public class ReservationService {
     private final UserRepository userRepository;
     private final SpaceRepository spaceRepository;
     private final EquipmentRepository equipmentRepository;
+    private final EmailService emailService;
 
     public Page<ReservationListItemResponse> getReservations(int page, int size, String filter) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
-
-        Page<Reservation> reservationsPage;
-
+        Page<Reservation> rp;
         if (filter != null && !filter.isBlank()) {
             switch (filter.toUpperCase()) {
-                case "PENDIENTE" -> reservationsPage = reservationRepository.findByStatus(ReservationStatus.PENDIENTE, pageable);
-                case "APROBADA" -> reservationsPage = reservationRepository.findByStatus(ReservationStatus.APROBADA, pageable);
-                case "RECHAZADA" -> reservationsPage = reservationRepository.findByStatus(ReservationStatus.RECHAZADA, pageable);
-                case "CANCELADA" -> reservationsPage = reservationRepository.findByStatus(ReservationStatus.CANCELADA, pageable);
-                case "SPACE" -> reservationsPage = reservationRepository.findByResourceType(ReservationResourceType.SPACE, pageable);
-                case "EQUIPMENT" -> reservationsPage = reservationRepository.findByResourceType(ReservationResourceType.EQUIPMENT, pageable);
-                default -> reservationsPage = reservationRepository.findAll(pageable);
+                case "PENDIENTE" -> rp = reservationRepository.findByStatus(ReservationStatus.PENDIENTE, pageable);
+                case "APROBADA" -> rp = reservationRepository.findByStatus(ReservationStatus.APROBADA, pageable);
+                case "RECHAZADA" -> rp = reservationRepository.findByStatus(ReservationStatus.RECHAZADA, pageable);
+                case "CANCELADA" -> rp = reservationRepository.findByStatus(ReservationStatus.CANCELADA, pageable);
+                case "DEVUELTA" -> rp = reservationRepository.findByStatus(ReservationStatus.DEVUELTA, pageable);
+                case "SPACE" -> rp = reservationRepository.findByResourceType(ReservationResourceType.SPACE, pageable);
+                case "EQUIPMENT" -> rp = reservationRepository.findByResourceType(ReservationResourceType.EQUIPMENT, pageable);
+                default -> rp = reservationRepository.findAll(pageable);
             }
-        } else {
-            reservationsPage = reservationRepository.findAll(pageable);
-        }
-
-        return reservationsPage.map(this::toListResponse);
+        } else { rp = reservationRepository.findAll(pageable); }
+        return rp.map(this::toListResponse);
     }
 
     public ReservationDetailResponse getReservationById(Long id) {
-        Reservation reservation = reservationRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Reserva no encontrada"));
-
-        return toDetailResponse(reservation);
+        return toDetailResponse(reservationRepository.findById(id).orElseThrow(() -> new RuntimeException("Reserva no encontrada")));
     }
 
     public ReservationFormOptionsResponse getFormOptions() {
-        List<ReservationOptionResponse> users = userRepository.findByActiveTrue()
-                .stream()
-                .map(user -> ReservationOptionResponse.builder()
-                        .id(user.getId())
-                        .label(user.getName() + " " + user.getLastName())
-                        .build())
-                .toList();
-
-        List<ReservationOptionResponse> spaces = spaceRepository.findByActiveTrue()
-                .stream()
-                .map(space -> ReservationOptionResponse.builder()
-                        .id(space.getId())
-                        .label(space.getName())
-                        .build())
-                .toList();
-
-        List<ReservationOptionResponse> equipments = equipmentRepository.findByActiveTrue()
-                .stream()
-                .map(equipment -> ReservationOptionResponse.builder()
-                        .id(equipment.getId())
-                        .label(equipment.getInventoryNumber() + " - " + equipment.getName())
-                        .build())
-                .toList();
-
-        return ReservationFormOptionsResponse.builder()
-                .users(users)
-                .spaces(spaces)
-                .equipments(equipments)
-                .build();
+        List<ReservationOptionResponse> users = userRepository.findByActiveTrue().stream()
+                .map(u -> ReservationOptionResponse.builder().id(u.getId()).label(u.getName() + " " + u.getLastName()).build()).toList();
+        List<ReservationOptionResponse> spaces = spaceRepository.findByActiveTrue().stream()
+                .map(s -> ReservationOptionResponse.builder().id(s.getId()).label(s.getName()).build()).toList();
+        List<ReservationOptionResponse> equipments = equipmentRepository.findByActiveTrue().stream()
+                .map(e -> ReservationOptionResponse.builder().id(e.getId()).label(e.getInventoryNumber() + " - " + e.getName()).build()).toList();
+        return ReservationFormOptionsResponse.builder().users(users).spaces(spaces).equipments(equipments).build();
     }
 
     public void createReservation(CreateReservationRequest request) {
@@ -97,216 +67,201 @@ public class ReservationService {
                 || request.getPurpose() == null || request.getPurpose().isBlank()) {
             throw new RuntimeException("Datos inválidos");
         }
+        if (request.getReservationDate().isBefore(LocalDate.now())) throw new RuntimeException("Fecha de reserva no válida");
 
-        if (request.getReservationDate().isBefore(LocalDate.now())) {
-            throw new RuntimeException("Fecha de reserva no válida");
-        }
+        LocalDate endDate = request.getEndDate() != null ? request.getEndDate() : request.getReservationDate();
+        if (endDate.isBefore(request.getReservationDate())) throw new RuntimeException("La fecha de fin no puede ser antes de la fecha de inicio");
 
-        if (!request.getEndTime().isAfter(request.getStartTime())) {
+        if (request.getReservationDate().equals(endDate) && !request.getEndTime().isAfter(request.getStartTime())) {
             throw new RuntimeException("Horario no válido");
         }
 
-        User requester = userRepository.findById(request.getRequesterId())
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-
-        if (!Boolean.TRUE.equals(requester.getActive())) {
-            throw new RuntimeException("Usuario no válido");
-        }
+        User requester = userRepository.findById(request.getRequesterId()).orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        if (!Boolean.TRUE.equals(requester.getActive())) throw new RuntimeException("Usuario no válido");
 
         Reservation.ReservationBuilder builder = Reservation.builder()
-                .requester(requester)
-                .resourceType(request.getResourceType())
-                .reservationDate(request.getReservationDate())
-                .startTime(request.getStartTime())
-                .endTime(request.getEndTime())
-                .purpose(normalizeText(request.getPurpose()))
-                .observations(normalizeNullableText(request.getObservations()))
-                .status(ReservationStatus.PENDIENTE)
-                .createdAt(LocalDateTime.now());
+                .requester(requester).resourceType(request.getResourceType())
+                .reservationDate(request.getReservationDate()).startTime(request.getStartTime())
+                .endDate(endDate).endTime(request.getEndTime())
+                .purpose(normalizeText(request.getPurpose())).observations(normalizeNullableText(request.getObservations()))
+                .status(ReservationStatus.PENDIENTE).createdAt(LocalDateTime.now());
 
-        List<ReservationStatus> blockingStatuses = List.of(ReservationStatus.PENDIENTE, ReservationStatus.APROBADA);
+        List<ReservationStatus> blockingStatuses = List.of(ReservationStatus.APROBADA);
 
         if (request.getResourceType() == ReservationResourceType.SPACE) {
-            Space space = spaceRepository.findById(request.getResourceId())
-                    .orElseThrow(() -> new RuntimeException("Espacio no encontrado"));
-
-            if (!Boolean.TRUE.equals(space.getActive())) {
-                throw new RuntimeException("Espacio no válido");
-            }
-
-            if (requester.getRole() == Role.STUDENT && !Boolean.TRUE.equals(space.getAllowStudents())) {
-                throw new RuntimeException("Acceso no permitido");
-            }
-
-            boolean overlaps = reservationRepository.existsBySpaceAndReservationDateAndStatusInAndStartTimeLessThanAndEndTimeGreaterThan(
-                    space,
-                    request.getReservationDate(),
-                    blockingStatuses,
-                    request.getEndTime(),
-                    request.getStartTime()
-            );
-
-            if (overlaps) {
-                throw new RuntimeException("Horario no disponible");
-            }
-
+            Space space = spaceRepository.findById(request.getResourceId()).orElseThrow(() -> new RuntimeException("Espacio no encontrado"));
+            if (!Boolean.TRUE.equals(space.getActive())) throw new RuntimeException("Espacio no válido");
+            if (requester.getRole() == Role.STUDENT && !Boolean.TRUE.equals(space.getAllowStudents())) throw new RuntimeException("Acceso no permitido");
+            boolean overlaps = reservationRepository.existsBySpaceAndReservationDateAndStatusInAndStartTimeLessThanAndEndTimeGreaterThan(space, request.getReservationDate(), blockingStatuses, request.getEndTime(), request.getStartTime());
+            if (overlaps) throw new RuntimeException("Horario no disponible");
             builder.space(space);
         } else {
-            Equipment equipment = equipmentRepository.findById(request.getResourceId())
-                    .orElseThrow(() -> new RuntimeException("Equipo no encontrado"));
-
-            if (!Boolean.TRUE.equals(equipment.getActive())) {
-                throw new RuntimeException("Equipo no válido");
-            }
-
-            if (requester.getRole() == Role.STUDENT && !Boolean.TRUE.equals(equipment.getAllowStudents())) {
-                throw new RuntimeException("Acceso no permitido");
-            }
-
-            boolean overlaps = reservationRepository.existsByEquipmentAndReservationDateAndStatusInAndStartTimeLessThanAndEndTimeGreaterThan(
-                    equipment,
-                    request.getReservationDate(),
-                    blockingStatuses,
-                    request.getEndTime(),
-                    request.getStartTime()
-            );
-
-            if (overlaps) {
-                throw new RuntimeException("Horario no disponible");
-            }
-
+            Equipment equipment = equipmentRepository.findById(request.getResourceId()).orElseThrow(() -> new RuntimeException("Equipo no encontrado"));
+            if (!Boolean.TRUE.equals(equipment.getActive())) throw new RuntimeException("Equipo no válido");
+            if (requester.getRole() == Role.STUDENT && !Boolean.TRUE.equals(equipment.getAllowStudents())) throw new RuntimeException("Acceso no permitido");
+            boolean overlaps = reservationRepository.existsByEquipmentAndReservationDateAndStatusInAndStartTimeLessThanAndEndTimeGreaterThan(equipment, request.getReservationDate(), blockingStatuses, request.getEndTime(), request.getStartTime());
+            if (overlaps) throw new RuntimeException("Horario no disponible");
             builder.equipment(equipment);
         }
 
-        reservationRepository.save(builder.build());
+        Reservation saved = reservationRepository.save(builder.build());
+        String rn = saved.getResourceType() == ReservationResourceType.SPACE ? saved.getSpace().getName() : saved.getEquipment().getName();
+        try { emailService.sendReservationCreatedEmail(requester.getEmail(), rn, saved.getReservationDate().toString(), saved.getStartTime().toString(), saved.getEndTime().toString()); } catch (Exception e) { }
     }
 
     public void approveReservation(Long id, String adminComment) {
-        Reservation reservation = getReservationEntity(id);
-
-        if (reservation.getStatus() != ReservationStatus.PENDIENTE) {
-            throw new RuntimeException("La reserva ya no se puede aprobar");
-        }
-
-        reservation.setStatus(ReservationStatus.APROBADA);
-        reservation.setAdminComment(normalizeNullableText(adminComment));
-        reservationRepository.save(reservation);
+        Reservation r = getEntity(id);
+        if (r.getStatus() != ReservationStatus.PENDIENTE) throw new RuntimeException("La reserva ya no se puede aprobar");
+        r.setStatus(ReservationStatus.APROBADA);
+        r.setAdminComment(normalizeNullableText(adminComment));
+        reservationRepository.save(r);
+        String rn = r.getResourceType() == ReservationResourceType.SPACE ? r.getSpace().getName() : r.getEquipment().getName();
+        try { emailService.sendReservationApprovedEmail(r.getRequester().getEmail(), rn, r.getReservationDate().toString(), r.getStartTime().toString(), r.getEndTime().toString()); } catch (Exception e) { }
     }
 
     public void rejectReservation(Long id, String adminComment) {
-        Reservation reservation = getReservationEntity(id);
+        Reservation r = getEntity(id);
+        if (r.getStatus() != ReservationStatus.PENDIENTE) throw new RuntimeException("La reserva ya no se puede rechazar");
+        if (adminComment == null || adminComment.isBlank()) throw new RuntimeException("Debe proporcionar un motivo de rechazo");
+        r.setStatus(ReservationStatus.RECHAZADA);
+        r.setAdminComment(normalizeText(adminComment));
+        reservationRepository.save(r);
+        String rn = r.getResourceType() == ReservationResourceType.SPACE ? r.getSpace().getName() : r.getEquipment().getName();
+        try { emailService.sendReservationRejectedEmail(r.getRequester().getEmail(), rn, r.getReservationDate().toString(), r.getAdminComment()); } catch (Exception e) { }
+    }
 
-        if (reservation.getStatus() != ReservationStatus.PENDIENTE) {
-            throw new RuntimeException("La reserva ya no se puede rechazar");
-        }
-
-        reservation.setStatus(ReservationStatus.RECHAZADA);
-        reservation.setAdminComment(normalizeNullableText(adminComment));
-        reservationRepository.save(reservation);
+    public void returnReservation(Long id, ReturnReservationRequest request) {
+        Reservation r = getEntity(id);
+        if (r.getStatus() != ReservationStatus.APROBADA) throw new RuntimeException("Solo se pueden devolver reservas aprobadas");
+        if (request.getReturnCondition() == null || request.getReturnCondition().isBlank()) throw new RuntimeException("Debe indicar el estado de devolución");
+        r.setStatus(ReservationStatus.DEVUELTA);
+        r.setReturnCondition(request.getReturnCondition().trim());
+        r.setReturnDescription(normalizeNullableText(request.getReturnDescription()));
+        r.setReturnedAt(LocalDateTime.now());
+        reservationRepository.save(r);
     }
 
     public void cancelReservation(Long id) {
-        Reservation reservation = getReservationEntity(id);
-
-        if (reservation.getStatus() == ReservationStatus.RECHAZADA || reservation.getStatus() == ReservationStatus.CANCELADA) {
+        Reservation r = getEntity(id);
+        if (r.getStatus() == ReservationStatus.RECHAZADA || r.getStatus() == ReservationStatus.CANCELADA || r.getStatus() == ReservationStatus.DEVUELTA)
             throw new RuntimeException("La reserva ya no se puede cancelar");
-        }
-
-        reservation.setStatus(ReservationStatus.CANCELADA);
-        reservationRepository.save(reservation);
-    }
-
-    private Reservation getReservationEntity(Long id) {
-        return reservationRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Reserva no encontrada"));
-    }
-
-    private String normalizeText(String value) {
-        return value == null ? "" : value.trim().replaceAll("\\s{2,}", " ");
-    }
-
-    private String normalizeNullableText(String value) {
-        if (value == null) return null;
-        String cleaned = value.trim().replaceAll("\\s{2,}", " ");
-        return cleaned.isBlank() ? null : cleaned;
-    }
-
-    private ReservationListItemResponse toListResponse(Reservation reservation) {
-        String resourceName = reservation.getResourceType() == ReservationResourceType.SPACE
-                ? reservation.getSpace().getName()
-                : reservation.getEquipment().getName();
-
-        return ReservationListItemResponse.builder()
-                .id(reservation.getId())
-                .requesterName(reservation.getRequester().getName() + " " + reservation.getRequester().getLastName())
-                .requesterType(reservation.getRequester().getUserType())
-                .resourceType(reservation.getResourceType().name())
-                .resourceName(resourceName)
-                .reservationDate(reservation.getReservationDate().toString())
-                .schedule(reservation.getStartTime() + " - " + reservation.getEndTime())
-                .status(reservation.getStatus().name())
-                .build();
-    }
-
-    private ReservationDetailResponse toDetailResponse(Reservation reservation) {
-        String resourceName = reservation.getResourceType() == ReservationResourceType.SPACE
-                ? reservation.getSpace().getName()
-                : reservation.getEquipment().getName();
-
-        return ReservationDetailResponse.builder()
-                .id(reservation.getId())
-                .requesterName(reservation.getRequester().getName() + " " + reservation.getRequester().getLastName())
-                .requesterEmail(reservation.getRequester().getEmail())
-                .requesterType(reservation.getRequester().getUserType())
-                .resourceType(reservation.getResourceType().name())
-                .resourceName(resourceName)
-                .reservationDate(reservation.getReservationDate().toString())
-                .startTime(reservation.getStartTime().toString())
-                .endTime(reservation.getEndTime().toString())
-                .purpose(reservation.getPurpose())
-                .observations(reservation.getObservations())
-                .status(reservation.getStatus().name())
-                .adminComment(reservation.getAdminComment())
-                .build();
+        r.setStatus(ReservationStatus.CANCELADA);
+        reservationRepository.save(r);
     }
 
     public List<ReservationListItemResponse> getReservationsBySpaceId(Long spaceId) {
-        return reservationRepository.findBySpaceIdOrderByReservationDateDesc(spaceId)
-                .stream()
-                .map(this::toListResponse)
-                .toList();
+        return reservationRepository.findBySpaceIdOrderByReservationDateDesc(spaceId).stream().map(this::toListResponse).toList();
     }
 
     public List<ReservationListItemResponse> getReservationsByEquipmentId(Long equipmentId) {
-        return reservationRepository.findByEquipmentIdOrderByReservationDateDesc(equipmentId)
-                .stream()
-                .map(this::toListResponse)
-                .toList();
+        return reservationRepository.findByEquipmentIdOrderByReservationDateDesc(equipmentId).stream().map(this::toListResponse).toList();
     }
+
     public Page<ReservationListItemResponse> getAuditRecords(int page, int size, String filter) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
-
-        List<ReservationStatus> auditStatuses = List.of(
-                ReservationStatus.APROBADA,
-                ReservationStatus.RECHAZADA,
-                ReservationStatus.CANCELADA
-        );
-
-        Page<Reservation> reservationsPage;
-
+        List<ReservationStatus> as = List.of(ReservationStatus.APROBADA, ReservationStatus.RECHAZADA, ReservationStatus.CANCELADA, ReservationStatus.DEVUELTA);
+        Page<Reservation> rp;
         if (filter != null && !filter.isBlank()) {
             switch (filter.toUpperCase()) {
-                case "SPACE" -> reservationsPage = reservationRepository.findByStatusInAndResourceType(auditStatuses, ReservationResourceType.SPACE, pageable);
-                case "EQUIPMENT" -> reservationsPage = reservationRepository.findByStatusInAndResourceType(auditStatuses, ReservationResourceType.EQUIPMENT, pageable);
-                case "APROBADA" -> reservationsPage = reservationRepository.findByStatus(ReservationStatus.APROBADA, pageable);
-                case "RECHAZADA" -> reservationsPage = reservationRepository.findByStatus(ReservationStatus.RECHAZADA, pageable);
-                case "CANCELADA" -> reservationsPage = reservationRepository.findByStatus(ReservationStatus.CANCELADA, pageable);
-                default -> reservationsPage = reservationRepository.findByStatusIn(auditStatuses, pageable);
+                case "SPACE" -> rp = reservationRepository.findByStatusInAndResourceType(as, ReservationResourceType.SPACE, pageable);
+                case "EQUIPMENT" -> rp = reservationRepository.findByStatusInAndResourceType(as, ReservationResourceType.EQUIPMENT, pageable);
+                case "APROBADA" -> rp = reservationRepository.findByStatus(ReservationStatus.APROBADA, pageable);
+                case "RECHAZADA" -> rp = reservationRepository.findByStatus(ReservationStatus.RECHAZADA, pageable);
+                case "CANCELADA" -> rp = reservationRepository.findByStatus(ReservationStatus.CANCELADA, pageable);
+                case "DEVUELTA" -> rp = reservationRepository.findByStatus(ReservationStatus.DEVUELTA, pageable);
+                default -> rp = reservationRepository.findByStatusIn(as, pageable);
             }
-        } else {
-            reservationsPage = reservationRepository.findByStatusIn(auditStatuses, pageable);
-        }
+        } else { rp = reservationRepository.findByStatusIn(as, pageable); }
+        return rp.map(this::toListResponse);
+    }
 
-        return reservationsPage.map(this::toListResponse);
+    public Page<ReservationListItemResponse> getMyReservations(Long userId, int page, int size, String filter) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
+        Page<Reservation> rp;
+        if (filter != null && !filter.isBlank()) {
+            switch (filter.toUpperCase()) {
+                case "PENDIENTE" -> rp = reservationRepository.findByRequesterIdAndStatus(userId, ReservationStatus.PENDIENTE, pageable);
+                case "APROBADA" -> rp = reservationRepository.findByRequesterIdAndStatus(userId, ReservationStatus.APROBADA, pageable);
+                case "RECHAZADA" -> rp = reservationRepository.findByRequesterIdAndStatus(userId, ReservationStatus.RECHAZADA, pageable);
+                case "CANCELADA" -> rp = reservationRepository.findByRequesterIdAndStatus(userId, ReservationStatus.CANCELADA, pageable);
+                case "DEVUELTA" -> rp = reservationRepository.findByRequesterIdAndStatus(userId, ReservationStatus.DEVUELTA, pageable);
+                default -> rp = reservationRepository.findByRequesterId(userId, pageable);
+            }
+        } else { rp = reservationRepository.findByRequesterId(userId, pageable); }
+        return rp.map(this::toListResponse);
+    }
+
+    public ReservationDetailResponse getMyReservationById(Long id, Long userId) {
+        Reservation r = reservationRepository.findById(id).orElseThrow(() -> new RuntimeException("Reserva no encontrada"));
+        if (!r.getRequester().getId().equals(userId)) throw new RuntimeException("No autorizado");
+        return toDetailResponse(r);
+    }
+
+    public void updateMyReservation(Long id, Long userId, CreateReservationRequest request) {
+        Reservation r = reservationRepository.findById(id).orElseThrow(() -> new RuntimeException("Reserva no encontrada"));
+        if (!r.getRequester().getId().equals(userId)) throw new RuntimeException("No autorizado");
+        if (r.getStatus() != ReservationStatus.PENDIENTE) throw new RuntimeException("Solo puedes editar solicitudes pendientes");
+        if (request.getReservationDate().isBefore(LocalDate.now())) throw new RuntimeException("Fecha de reserva no válida");
+
+        LocalDate endDate = request.getEndDate() != null ? request.getEndDate() : request.getReservationDate();
+        if (endDate.isBefore(request.getReservationDate())) throw new RuntimeException("La fecha de fin no puede ser antes de la de inicio");
+        if (request.getReservationDate().equals(endDate) && !request.getEndTime().isAfter(request.getStartTime())) throw new RuntimeException("Horario no válido");
+
+        List<ReservationStatus> bs = List.of(ReservationStatus.APROBADA);
+        if (r.getResourceType() == ReservationResourceType.SPACE) {
+            boolean ov = reservationRepository.existsBySpaceAndReservationDateAndStatusInAndStartTimeLessThanAndEndTimeGreaterThan(r.getSpace(), request.getReservationDate(), bs, request.getEndTime(), request.getStartTime());
+            if (ov) throw new RuntimeException("Horario no disponible");
+        } else {
+            boolean ov = reservationRepository.existsByEquipmentAndReservationDateAndStatusInAndStartTimeLessThanAndEndTimeGreaterThan(r.getEquipment(), request.getReservationDate(), bs, request.getEndTime(), request.getStartTime());
+            if (ov) throw new RuntimeException("Horario no disponible");
+        }
+        r.setReservationDate(request.getReservationDate());
+        r.setStartTime(request.getStartTime());
+        r.setEndDate(endDate);
+        r.setEndTime(request.getEndTime());
+        r.setPurpose(normalizeText(request.getPurpose()));
+        r.setObservations(normalizeNullableText(request.getObservations()));
+        reservationRepository.save(r);
+    }
+
+    public void cancelMyReservation(Long id, Long userId) {
+        Reservation r = reservationRepository.findById(id).orElseThrow(() -> new RuntimeException("Reserva no encontrada"));
+        if (!r.getRequester().getId().equals(userId)) throw new RuntimeException("No autorizado");
+        if (r.getStatus() != ReservationStatus.PENDIENTE) throw new RuntimeException("Solo puedes cancelar solicitudes pendientes");
+        r.setStatus(ReservationStatus.CANCELADA);
+        reservationRepository.save(r);
+    }
+
+    private Reservation getEntity(Long id) {
+        return reservationRepository.findById(id).orElseThrow(() -> new RuntimeException("Reserva no encontrada"));
+    }
+
+    private String normalizeText(String v) { return v == null ? "" : v.trim().replaceAll("\\s{2,}", " "); }
+    private String normalizeNullableText(String v) { if (v == null) return null; String c = v.trim().replaceAll("\\s{2,}", " "); return c.isBlank() ? null : c; }
+
+    private ReservationListItemResponse toListResponse(Reservation r) {
+        String rn = r.getResourceType() == ReservationResourceType.SPACE ? r.getSpace().getName() : r.getEquipment().getName();
+        String ed = r.getEndDate() != null ? r.getEndDate().toString() : r.getReservationDate().toString();
+        return ReservationListItemResponse.builder()
+                .id(r.getId()).requesterName(r.getRequester().getName() + " " + r.getRequester().getLastName())
+                .requesterType(r.getRequester().getUserType()).resourceType(r.getResourceType().name())
+                .resourceName(rn).reservationDate(r.getReservationDate().toString())
+                .endDate(ed).schedule(r.getStartTime() + " - " + r.getEndTime())
+                .status(r.getStatus().name()).build();
+    }
+
+    private ReservationDetailResponse toDetailResponse(Reservation r) {
+        String rn = r.getResourceType() == ReservationResourceType.SPACE ? r.getSpace().getName() : r.getEquipment().getName();
+        String ed = r.getEndDate() != null ? r.getEndDate().toString() : r.getReservationDate().toString();
+        return ReservationDetailResponse.builder()
+                .id(r.getId()).requesterName(r.getRequester().getName() + " " + r.getRequester().getLastName())
+                .requesterEmail(r.getRequester().getEmail()).requesterType(r.getRequester().getUserType())
+                .resourceType(r.getResourceType().name()).resourceName(rn)
+                .reservationDate(r.getReservationDate().toString()).startTime(r.getStartTime().toString())
+                .endDate(ed).endTime(r.getEndTime().toString())
+                .purpose(r.getPurpose()).observations(r.getObservations())
+                .status(r.getStatus().name()).adminComment(r.getAdminComment())
+                .returnCondition(r.getReturnCondition()).returnDescription(r.getReturnDescription())
+                .returnedAt(r.getReturnedAt() != null ? r.getReturnedAt().toString() : null).build();
     }
 }

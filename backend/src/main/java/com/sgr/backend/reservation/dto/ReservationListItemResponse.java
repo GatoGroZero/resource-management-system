@@ -12,6 +12,7 @@ public class ReservationListItemResponse {
     private String resourceType;
     private String resourceName;
     private String reservationDate;
+    private String endDate;
     private String schedule;
     private String status;
 }

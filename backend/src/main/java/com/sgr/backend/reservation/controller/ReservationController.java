@@ -22,9 +22,7 @@ public class ReservationController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String filter
-    ) {
-        return ResponseEntity.ok(reservationService.getReservations(page, size, filter));
-    }
+    ) { return ResponseEntity.ok(reservationService.getReservations(page, size, filter)); }
 
     @GetMapping("/{id}")
     public ResponseEntity<ReservationDetailResponse> getReservationById(@PathVariable Long id) {
@@ -46,6 +44,26 @@ public class ReservationController {
         return ResponseEntity.ok(reservationService.getReservationsByEquipmentId(equipmentId));
     }
 
+    @GetMapping("/audit")
+    public ResponseEntity<Page<ReservationListItemResponse>> getAuditRecords(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String filter
+    ) { return ResponseEntity.ok(reservationService.getAuditRecords(page, size, filter)); }
+
+    @GetMapping("/my")
+    public ResponseEntity<Page<ReservationListItemResponse>> getMyReservations(
+            @RequestParam Long userId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String filter
+    ) { return ResponseEntity.ok(reservationService.getMyReservations(userId, page, size, filter)); }
+
+    @GetMapping("/my/{id}")
+    public ResponseEntity<ReservationDetailResponse> getMyReservationById(@PathVariable Long id, @RequestParam Long userId) {
+        return ResponseEntity.ok(reservationService.getMyReservationById(id, userId));
+    }
+
     @PostMapping
     public ResponseEntity<?> createReservation(@RequestBody CreateReservationRequest request) {
         reservationService.createReservation(request);
@@ -59,8 +77,14 @@ public class ReservationController {
     }
 
     @PatchMapping("/{id}/reject")
-    public ResponseEntity<?> rejectReservation(@PathVariable Long id, @RequestBody(required = false) ReservationActionRequest request) {
-        reservationService.rejectReservation(id, request != null ? request.getAdminComment() : null);
+    public ResponseEntity<?> rejectReservation(@PathVariable Long id, @RequestBody ReservationActionRequest request) {
+        reservationService.rejectReservation(id, request.getAdminComment());
+        return ResponseEntity.ok().build();
+    }
+
+    @PatchMapping("/{id}/return")
+    public ResponseEntity<?> returnReservation(@PathVariable Long id, @RequestBody ReturnReservationRequest request) {
+        reservationService.returnReservation(id, request);
         return ResponseEntity.ok().build();
     }
 
@@ -70,12 +94,15 @@ public class ReservationController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/audit")
-    public ResponseEntity<Page<ReservationListItemResponse>> getAuditRecords(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) String filter
-    ) {
-        return ResponseEntity.ok(reservationService.getAuditRecords(page, size, filter));
+    @PutMapping("/my/{id}")
+    public ResponseEntity<?> updateMyReservation(@PathVariable Long id, @RequestParam Long userId, @RequestBody CreateReservationRequest request) {
+        reservationService.updateMyReservation(id, userId, request);
+        return ResponseEntity.ok().build();
+    }
+
+    @PatchMapping("/my/{id}/cancel")
+    public ResponseEntity<?> cancelMyReservation(@PathVariable Long id, @RequestParam Long userId) {
+        reservationService.cancelMyReservation(id, userId);
+        return ResponseEntity.ok().build();
     }
 }
