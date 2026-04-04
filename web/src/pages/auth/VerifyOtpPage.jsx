@@ -59,8 +59,8 @@ function VerifyOtpPage() {
           <input
             type="text"
             maxLength="6"
-            placeholder="123456"
-            {...register('code')}
+            placeholder="Ingresa el código de verificación"
+            {...register('code')}//validar que el código sea de 6 dígitos
             className="auth-input"
           />
           {errors.code && <span className="auth-error">{errors.code.message}</span>}

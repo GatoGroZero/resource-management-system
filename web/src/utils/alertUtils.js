@@ -7,7 +7,17 @@ export const showToast = (icon, title) => {
     icon,
     title,
     showConfirmButton: false,
-    timer: 2500,
+    timer: 3500,
     timerProgressBar: true,
+  })
+}
+
+export const showAlert = (icon, title, text) => {
+  Swal.fire({
+    icon,
+    title,
+    text,
+    confirmButtonColor: '#00843D',
+    confirmButtonText: 'Entendido',
   })
 }
