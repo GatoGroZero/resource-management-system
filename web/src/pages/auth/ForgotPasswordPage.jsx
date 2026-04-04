@@ -46,7 +46,7 @@ function ForgotPasswordPage() {
           <label className="auth-label">Correo electrónico</label>
           <input
             type="email"
-            placeholder="correo@utez.edu.mx"
+            placeholder="Ingresa tu correo"
             {...register('email')}
             className="auth-input"
           />

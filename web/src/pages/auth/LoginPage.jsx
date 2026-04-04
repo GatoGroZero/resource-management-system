@@ -20,7 +20,6 @@ function LoginPage() {
     if (!email.trim()) e.email = 'El correo es obligatorio'
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) e.email = 'Ingresa un correo válido'
     if (!password) e.password = 'La contraseña es obligatoria'
-    else if (password.length < 6) e.password = 'La contraseña debe tener al menos 6 caracteres'
     setErrors(e)
     return Object.keys(e).length === 0
   }
@@ -37,15 +36,8 @@ function LoginPage() {
       showToast('success', 'Inicio de sesión correcto')
       if (response.role === 'ADMIN') navigate('/reservations')
       else navigate('/dashboard')
-    } catch (error) {
-      const status = error?.response?.status
-      if (status === 401 || status === 403) {
-        setLoginError('Credenciales incorrectas. Verifica tu correo y contraseña.')
-      } else if (status === 500) {
-        setLoginError('Error en el servidor. Intenta más tarde.')
-      } else {
-        setLoginError('No se pudo conectar al servidor. Verifica tu conexión.')
-      }
+    } catch {
+      setLoginError('Credenciales incorrectas. Verifica tu correo y contraseña.')
     } finally {
       setLoading(false)
     }
@@ -70,9 +62,9 @@ function LoginPage() {
             <label style={labelStyle}>Correo Institucional</label>
             <input
               type="email"
-              placeholder="correo@utez.edu.mx"
+              placeholder="Ingresa tu correo"
               value={email}
-              onChange={(e) => { setEmail(e.target.value); setErrors({ ...errors, email: '' }); setLoginError('') }}
+              onChange={(e) => { setEmail(e.target.value); if (errors.email) setErrors({ ...errors, email: '' }) }}
               style={{ ...inputStyle, ...(errors.email ? inputErrorStyle : {}) }}
             />
             {errors.email && <span style={errorStyle}>{errors.email}</span>}
@@ -83,9 +75,9 @@ function LoginPage() {
             <div style={{ position: 'relative' }}>
               <input
                 type={showPassword ? 'text' : 'password'}
-                placeholder="••••••••"
+                placeholder="Ingresa tu contraseña"
                 value={password}
-                onChange={(e) => { setPassword(e.target.value); setErrors({ ...errors, password: '' }); setLoginError('') }}
+                onChange={(e) => { setPassword(e.target.value); if (errors.password) setErrors({ ...errors, password: '' }) }}
                 style={{ ...inputStyle, paddingRight: '46px', ...(errors.password ? inputErrorStyle : {}) }}
               />
               <button type="button" onClick={() => setShowPassword(!showPassword)} style={eyeButtonStyle}>
@@ -113,10 +105,8 @@ const cardStyle = { width: '100%', maxWidth: '520px', background: '#fff', border
 const logoBoxStyle = { width: '80px', height: '80px', margin: '0 auto 24px', borderRadius: '18px', background: '#fff', border: '1px solid #f1f5f9', boxShadow: '0 4px 14px rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, color: '#0b2f63' }
 const titleStyle = { textAlign: 'center', color: '#111827', fontSize: '30px', fontWeight: 700, marginBottom: '10px' }
 const subtitleStyle = { textAlign: 'center', color: '#6b7280', fontSize: '14px', marginBottom: '28px' }
-
 const alertStyle = { display: 'flex', alignItems: 'center', gap: '10px', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '12px', padding: '14px 16px', marginBottom: '20px', color: '#dc2626', fontSize: '14px', fontWeight: 600 }
 const alertIconStyle = { fontSize: '18px', flexShrink: 0 }
-
 const formStyle = { display: 'flex', flexDirection: 'column', gap: '18px' }
 const fieldStyle = { display: 'flex', flexDirection: 'column', gap: '8px' }
 const labelStyle = { color: '#374151', fontSize: '14px', fontWeight: 600 }
