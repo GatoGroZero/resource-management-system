@@ -5,6 +5,7 @@ import com.sgr.backend.space.dto.SpaceDetailResponse;
 import com.sgr.backend.space.dto.SpaceListItemResponse;
 import com.sgr.backend.space.dto.UpdateSpaceRequest;
 import com.sgr.backend.space.service.SpaceService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -34,13 +35,13 @@ public class SpaceController {
     }
 
     @PostMapping
-    public ResponseEntity<?> createSpace(@RequestBody CreateSpaceRequest request) {
+    public ResponseEntity<?> createSpace(@Valid @RequestBody CreateSpaceRequest request) {
         spaceService.createSpace(request);
         return ResponseEntity.ok().build();
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateSpace(@PathVariable Long id, @RequestBody UpdateSpaceRequest request) {
+    public ResponseEntity<?> updateSpace(@PathVariable Long id, @Valid @RequestBody UpdateSpaceRequest request) {
         spaceService.updateSpace(id, request);
         return ResponseEntity.ok().build();
     }

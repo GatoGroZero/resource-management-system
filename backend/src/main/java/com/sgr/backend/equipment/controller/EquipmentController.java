@@ -5,6 +5,7 @@ import com.sgr.backend.equipment.dto.EquipmentDetailResponse;
 import com.sgr.backend.equipment.dto.EquipmentListItemResponse;
 import com.sgr.backend.equipment.dto.UpdateEquipmentRequest;
 import com.sgr.backend.equipment.service.EquipmentService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -35,13 +36,13 @@ public class EquipmentController {
     }
 
     @PostMapping
-    public ResponseEntity<?> createEquipment(@RequestBody CreateEquipmentRequest request) {
+    public ResponseEntity<?> createEquipment(@Valid @RequestBody CreateEquipmentRequest request) {
         equipmentService.createEquipment(request);
         return ResponseEntity.ok().build();
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateEquipment(@PathVariable Long id, @RequestBody UpdateEquipmentRequest request) {
+    public ResponseEntity<?> updateEquipment(@PathVariable Long id, @Valid @RequestBody UpdateEquipmentRequest request) {
         equipmentService.updateEquipment(id, request);
         return ResponseEntity.ok().build();
     }

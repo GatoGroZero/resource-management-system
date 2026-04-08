@@ -2,6 +2,7 @@ package com.sgr.backend.reservation.controller;
 
 import com.sgr.backend.reservation.dto.*;
 import com.sgr.backend.reservation.service.ReservationService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -65,7 +66,7 @@ public class ReservationController {
     }
 
     @PostMapping
-    public ResponseEntity<?> createReservation(@RequestBody CreateReservationRequest request) {
+    public ResponseEntity<?> createReservation(@Valid @RequestBody CreateReservationRequest request) {
         reservationService.createReservation(request);
         return ResponseEntity.ok().build();
     }
@@ -77,13 +78,13 @@ public class ReservationController {
     }
 
     @PatchMapping("/{id}/reject")
-    public ResponseEntity<?> rejectReservation(@PathVariable Long id, @RequestBody ReservationActionRequest request) {
+    public ResponseEntity<?> rejectReservation(@PathVariable Long id, @Valid @RequestBody ReservationActionRequest request) {
         reservationService.rejectReservation(id, request.getAdminComment());
         return ResponseEntity.ok().build();
     }
 
     @PatchMapping("/{id}/return")
-    public ResponseEntity<?> returnReservation(@PathVariable Long id, @RequestBody ReturnReservationRequest request) {
+    public ResponseEntity<?> returnReservation(@PathVariable Long id, @Valid @RequestBody ReturnReservationRequest request) {
         reservationService.returnReservation(id, request);
         return ResponseEntity.ok().build();
     }
@@ -95,7 +96,7 @@ public class ReservationController {
     }
 
     @PutMapping("/my/{id}")
-    public ResponseEntity<?> updateMyReservation(@PathVariable Long id, @RequestParam Long userId, @RequestBody CreateReservationRequest request) {
+    public ResponseEntity<?> updateMyReservation(@PathVariable Long id, @RequestParam Long userId, @Valid @RequestBody CreateReservationRequest request) {
         reservationService.updateMyReservation(id, userId, request);
         return ResponseEntity.ok().build();
     }
