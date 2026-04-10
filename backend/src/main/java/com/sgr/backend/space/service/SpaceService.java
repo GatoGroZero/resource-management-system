@@ -76,7 +76,7 @@ public class SpaceService {
         );
 
         if (spaceRepository.existsByNameIgnoreCase(name)) {
-            throw new RuntimeException("Nombre de espacio no válido");
+            throw new RuntimeException("Ya existe un espacio con ese nombre");
         }
 
         Space space = Space.builder()
@@ -113,7 +113,7 @@ public class SpaceService {
         );
 
         if (spaceRepository.existsByNameIgnoreCaseAndIdNot(name, id)) {
-            throw new RuntimeException("Nombre de espacio no válido");
+            throw new RuntimeException("Ya existe un espacio con ese nombre");
         }
 
         space.setName(name);
@@ -145,21 +145,48 @@ public class SpaceService {
             Boolean allowStudents,
             SpaceAvailability availability
     ) {
-        if (name.isBlank() || category == null || location.isBlank() || capacity == null
-                || description.isBlank() || allowStudents == null || availability == null) {
-            throw new RuntimeException("Datos inválidos");
+        if (name.isBlank()) {
+            throw new RuntimeException("El nombre del espacio es obligatorio");
         }
 
-        if (name.length() < 3 || location.length() < 3) {
-            throw new RuntimeException("Datos inválidos");
+        if (category == null) {
+            throw new RuntimeException("La categoria del espacio es obligatoria");
+        }
+
+        if (location.isBlank()) {
+            throw new RuntimeException("La ubicacion del espacio es obligatoria");
+        }
+
+        if (capacity == null) {
+            throw new RuntimeException("La capacidad del espacio es obligatoria");
+        }
+
+        if (description.isBlank()) {
+            throw new RuntimeException("La descripcion del espacio es obligatoria");
+        }
+
+        if (allowStudents == null) {
+            throw new RuntimeException("Debe indicar si el espacio permite estudiantes");
+        }
+
+        if (availability == null) {
+            throw new RuntimeException("La disponibilidad del espacio es obligatoria");
+        }
+
+        if (name.length() < 3 || name.length() > 100) {
+            throw new RuntimeException("El nombre del espacio debe tener entre 3 y 100 caracteres");
+        }
+
+        if (location.length() < 3 || location.length() > 150) {
+            throw new RuntimeException("La ubicacion debe tener entre 3 y 150 caracteres");
         }
 
         if (description.length() < 10 || description.length() > 500) {
-            throw new RuntimeException("Descripción no válida");
+            throw new RuntimeException("La descripcion del espacio debe tener entre 10 y 500 caracteres");
         }
 
         if (capacity < 1 || capacity > 10000) {
-            throw new RuntimeException("Capacidad no válida");
+            throw new RuntimeException("La capacidad debe estar entre 1 y 10000");
         }
     }
 

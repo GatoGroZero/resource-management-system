@@ -9,15 +9,27 @@ function ViewSpaceModal({ space, onClose }) {
           <button type="button" onClick={onClose} style={closeButtonStyle}>×</button>
         </div>
 
-        <div style={gridStyle}>
-          <Info label="Nombre" value={space.name} />
-          <Info label="Categoría" value={space.category} />
-          <Info label="Ubicación" value={space.location} />
-          <Info label="Capacidad" value={space.capacity + ' personas'} />
-          <Info label="Descripción" value={space.description || '—'} />
-          <Info label="Acceso para estudiantes" value={space.allowStudents ? 'Permitido' : 'Restringido'} />
-          <Info label="Estado" value={space.active ? 'Activo' : 'Inactivo'} />
-          <Info label="Disponibilidad" value={formatAvailability(space.availability)} />
+        <div style={contentStyle}>
+          <Section title="Información general">
+            <div style={gridStyle}>
+              <Info label="Nombre" value={space.name} />
+              <Info label="Categoría" value={space.category} />
+              <Info label="Ubicación" value={space.location} />
+              <Info label="Capacidad" value={space.capacity + ' personas'} />
+            </div>
+          </Section>
+
+          <Section title="Estado y acceso">
+            <div style={gridStyle}>
+              <Info label="Estado" value={space.active ? 'Activo' : 'Inactivo'} />
+              <Info label="Disponibilidad" value={formatAvailability(space.availability)} />
+              <Info label="Acceso para estudiantes" value={space.allowStudents ? 'Permitido' : 'Restringido'} />
+            </div>
+          </Section>
+
+          <Section title="Descripción">
+            <Info label="Detalle" value={space.description || '—'} fullWidth />
+          </Section>
         </div>
 
         <div style={footerStyle}>
@@ -28,9 +40,18 @@ function ViewSpaceModal({ space, onClose }) {
   )
 }
 
-function Info({ label, value }) {
+function Section({ title, children }) {
   return (
-    <div style={infoBoxStyle}>
+    <section style={sectionStyle}>
+      <h4 style={sectionTitleStyle}>{title}</h4>
+      {children}
+    </section>
+  )
+}
+
+function Info({ label, value, fullWidth = false }) {
+  return (
+    <div style={fullWidth ? fullInfoBoxStyle : infoBoxStyle}>
       <span style={infoLabelStyle}>{label}</span>
       <p style={infoValueStyle}>{value}</p>
     </div>
@@ -48,8 +69,12 @@ const modalStyle = { width: '100%', maxWidth: '560px', background: '#ffffff', bo
 const headerStyle = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }
 const titleStyle = { fontSize: '18px', fontWeight: 800, color: '#111827' }
 const closeButtonStyle = { border: 'none', background: 'transparent', color: '#94a3b8', fontSize: '22px', cursor: 'pointer' }
+const contentStyle = { display: 'flex', flexDirection: 'column', gap: '14px' }
+const sectionStyle = { border: '1px solid #e5e7eb', borderRadius: '14px', padding: '14px', background: '#ffffff' }
+const sectionTitleStyle = { marginBottom: '10px', color: '#1f2937', fontSize: '12px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.04em' }
 const gridStyle = { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }
 const infoBoxStyle = { background: '#f8fafc', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '12px 14px' }
+const fullInfoBoxStyle = { ...infoBoxStyle }
 const infoLabelStyle = { display: 'block', color: '#64748b', fontSize: '12px', fontWeight: 700, marginBottom: '6px' }
 const infoValueStyle = { color: '#111827', fontSize: '14px', fontWeight: 600, whiteSpace: 'pre-wrap' }
 const footerStyle = { display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }

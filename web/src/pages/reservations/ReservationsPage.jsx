@@ -143,7 +143,7 @@ function ReservationsPage() {
                     {/* Devolver - solo APROBADA */}
                     <button type="button" onClick={() => r.status === 'APROBADA' && setReturnItem(r)} disabled={r.status !== 'APROBADA'} style={r.status === 'APROBADA' ? aBtn('#eff6ff', '#2563eb', '#bfdbfe') : disBtn} title="Devolver">↩</button>
                     {/* Rechazar - solo PENDIENTE */}
-                    <button type="button" onClick={() => r.status === 'PENDIENTE' && setRejectItem(r)} disabled={r.status !== 'PENDIENTE'} style={r.status === 'PENDIENTE' ? aBtn('#fef2f2', '#dc2626', '#fecaca') : disBtn} title="Rechazar">⏻</button>
+                    <button type="button" onClick={() => r.status === 'PENDIENTE' && setRejectItem(r)} disabled={r.status !== 'PENDIENTE'} style={r.status === 'PENDIENTE' ? aBtn('#fef2f2', '#dc2626', '#fecaca') : disBtn} title="Rechazar">✖</button>
                   </div>
                 </td>
               </tr>
@@ -167,24 +167,41 @@ function ReservationsPage() {
             <button type="button" onClick={() => setViewItem(null)} style={clBtn}>×</button>
           </div>
           <div style={mdBody}>
-            <div style={dGrid}>
-              <Det l="SOLICITANTE" v={viewItem.requesterName} />
-              <Det l="CORREO" v={viewItem.requesterEmail} />
-              <Det l="TIPO DE SOLICITANTE" v={viewItem.requesterType || '—'} />
-              <Det l="TIPO DE RECURSO" v={viewItem.resourceType === 'SPACE' ? 'Espacio' : 'Equipo'} />
-              <Det l="RECURSO" v={viewItem.resourceName} />
-              <Det l="FECHA INICIO" v={viewItem.reservationDate} />
-              <Det l="HORA INICIO" v={viewItem.startTime} />
-              <Det l="FECHA DEVOLUCIÓN" v={viewItem.endDate || viewItem.reservationDate} />
-              <Det l="HORA FIN" v={viewItem.endTime} />
-              <Det l="ESTADO" v={fmtStatus(viewItem.status)} />
-              <Det l="MOTIVO" v={viewItem.purpose} />
-              <Det l="OBSERVACIONES" v={viewItem.observations || '—'} />
-              <Det l="COMENTARIO ADMINISTRATIVO" v={viewItem.adminComment || '—'} />
-              {viewItem.returnCondition && <Det l="ESTADO DEVOLUCIÓN" v={viewItem.returnCondition} />}
-              {viewItem.returnDescription && <Det l="DESCRIPCIÓN DEVOLUCIÓN" v={viewItem.returnDescription} />}
-              {viewItem.returnedAt && <Det l="DEVUELTO EL" v={viewItem.returnedAt} />}
-            </div>
+            <Section t="Solicitante">
+              <div style={dGrid}>
+                <Det l="Solicitante" v={viewItem.requesterName} />
+                <Det l="Correo" v={viewItem.requesterEmail} />
+                <Det l="Tipo de solicitante" v={viewItem.requesterType || '—'} />
+              </div>
+            </Section>
+
+            <Section t="Reserva">
+              <div style={dGrid}>
+                <Det l="Tipo de recurso" v={viewItem.resourceType === 'SPACE' ? 'Espacio' : 'Equipo'} />
+                <Det l="Recurso" v={viewItem.resourceName} />
+                <Det l="Fecha inicio" v={viewItem.reservationDate} />
+                <Det l="Hora inicio" v={viewItem.startTime} />
+                <Det l="Fecha devolución" v={viewItem.endDate || viewItem.reservationDate} />
+                <Det l="Hora fin" v={viewItem.endTime} />
+                <Det l="Estado" v={fmtStatus(viewItem.status)} />
+              </div>
+            </Section>
+
+            <Section t="Notas">
+              <Det l="Motivo" v={viewItem.purpose || '—'} fw />
+              <Det l="Observaciones" v={viewItem.observations || '—'} fw />
+              <Det l="Comentario administrativo" v={viewItem.adminComment || '—'} fw />
+            </Section>
+
+            {(viewItem.returnCondition || viewItem.returnDescription || viewItem.returnedAt) && (
+              <Section t="Devolución">
+                <div style={dGrid}>
+                  {viewItem.returnCondition && <Det l="Estado devolución" v={viewItem.returnCondition} />}
+                  {viewItem.returnedAt && <Det l="Devuelto el" v={viewItem.returnedAt} />}
+                </div>
+                {viewItem.returnDescription && <Det l="Descripción devolución" v={viewItem.returnDescription} fw />}
+              </Section>
+            )}
           </div>
           <div style={mdFoot}><button type="button" onClick={() => setViewItem(null)} style={mdClBtn}>Cerrar</button></div>
         </div></div>
@@ -280,7 +297,8 @@ function ReservationsPage() {
   )
 }
 
-function Det({ l, v }) { return <div style={detBox}><span style={detLabel}>{l}</span><p style={detValue}>{v}</p></div> }
+function Section({ t, children }) { return <section style={detailSectionStyle}><h4 style={detailSectionTitleStyle}>{t}</h4>{children}</section> }
+function Det({ l, v, fw = false }) { return <div style={fw ? detBoxFull : detBox}><span style={detLabel}>{l}</span><p style={detValue}>{v}</p></div> }
 function fmtStatus(s) { return { PENDIENTE: 'Pendiente', APROBADA: 'En préstamo', RECHAZADA: 'Rechazada', CANCELADA: 'Cancelada', DEVUELTA: 'Devuelta' }[s] || s }
 function statusBadge(s) {
   const c = { PENDIENTE: { bg: '#fef3c7', c: '#92400e' }, APROBADA: { bg: '#dbeafe', c: '#2563eb' }, RECHAZADA: { bg: '#fee2e2', c: '#dc2626' }, CANCELADA: { bg: '#f1f5f9', c: '#64748b' }, DEVUELTA: { bg: '#dcfce7', c: '#15803d' } }
@@ -331,7 +349,10 @@ const mdRejectBtn = { border: 'none', background: '#dc2626', color: '#fff', padd
 
 // Detalle
 const dGrid = { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }
+const detailSectionStyle = { border: '1px solid #e5e7eb', borderRadius: '14px', padding: '14px', background: '#fff', marginBottom: '14px' }
+const detailSectionTitleStyle = { marginBottom: '10px', color: '#1f2937', fontSize: '12px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.04em' }
 const detBox = { background: '#f8fafc', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '12px 14px' }
+const detBoxFull = { ...detBox, marginTop: '10px' }
 const detLabel = { display: 'block', color: '#94a3b8', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }
 const detValue = { color: '#111827', fontSize: '14px', fontWeight: 600 }
 

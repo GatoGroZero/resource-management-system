@@ -15,16 +15,30 @@ function ViewUserModal({ user, onClose }) {
             </button>
           </div>
   
-          <div style={gridStyle}>
-            <Info label="Nombre" value={user.name} />
-            <Info label="Apellidos" value={user.lastName} />
-            <Info label="Fecha de Nacimiento" value={user.birthDate || '—'} />
-            <Info label="Rol" value={formatRole(user.role)} />
-            <Info label="Tipo de Usuario" value={user.userType || '—'} />
-            <Info label="Matrícula / ID" value={user.identifier || '—'} />
-            <Info label="Correo" value={user.email} />
-            <Info label="Teléfono" value={user.phone || '—'} />
-            <Info label="Estado" value={user.active ? 'Activo' : 'Inactivo'} />
+          <div style={contentStyle}>
+            <Section title="Información personal">
+              <div style={gridStyle}>
+                <Info label="Nombre" value={user.name} />
+                <Info label="Apellidos" value={user.lastName} />
+                <Info label="Fecha de nacimiento" value={user.birthDate || '—'} />
+                <Info label="Rol" value={formatRole(user.role)} />
+              </div>
+            </Section>
+
+            <Section title="Información institucional">
+              <div style={gridStyle}>
+                <Info label="Tipo de usuario" value={user.userType || '—'} />
+                <Info label="Matrícula / ID" value={user.identifier || '—'} />
+                <Info label="Estado" value={user.active ? 'Activo' : 'Inactivo'} />
+              </div>
+            </Section>
+
+            <Section title="Contacto">
+              <div style={gridStyle}>
+                <Info label="Correo" value={user.email} />
+                <Info label="Teléfono" value={user.phone || '—'} />
+              </div>
+            </Section>
           </div>
   
           <div style={footerStyle}>
@@ -37,6 +51,15 @@ function ViewUserModal({ user, onClose }) {
     )
   }
   
+  function Section({ title, children }) {
+    return (
+      <section style={sectionStyle}>
+        <h4 style={sectionTitleStyle}>{title}</h4>
+        {children}
+      </section>
+    )
+  }
+
   function Info({ label, value }) {
     return (
       <div style={infoBoxStyle}>
@@ -99,6 +122,28 @@ function ViewUserModal({ user, onClose }) {
     height: '36px',
     borderRadius: '10px',
     cursor: 'pointer',
+  }
+
+  const contentStyle = {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '16px',
+  }
+
+  const sectionStyle = {
+    border: '1px solid #e5e7eb',
+    borderRadius: '14px',
+    padding: '14px',
+    background: '#ffffff',
+  }
+
+  const sectionTitleStyle = {
+    marginBottom: '10px',
+    color: '#1f2937',
+    fontSize: '13px',
+    fontWeight: 800,
+    textTransform: 'uppercase',
+    letterSpacing: '0.04em',
   }
   
   const gridStyle = {

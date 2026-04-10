@@ -138,15 +138,42 @@ function RequestsPage() {
         <div style={ovStyle}><div style={mdStyle}>
           <div style={mdHead}><h3 style={mdTitle}>Detalles de la Solicitud</h3><button type="button" onClick={() => setViewItem(null)} style={clBtn}>×</button></div>
           <div style={mdBody}>
-            <div style={dGrid}>
-              <Det l="ID" v={`#${viewItem.id}`} /><Det l="Estado" v={fmtStatus(viewItem.status)} />
-              <Det l="Recurso" v={viewItem.resourceName} /><Det l="Tipo" v={viewItem.resourceType === 'SPACE' ? 'Espacio' : 'Equipo'} />
-              <Det l="Fecha inicio" v={viewItem.reservationDate} /><Det l="Hora inicio" v={viewItem.startTime} />
-              <Det l="Fecha devolución" v={viewItem.endDate || viewItem.reservationDate} /><Det l="Hora devolución" v={viewItem.endTime} />
-            </div>
-            <div style={dFull}><span style={dLabel}>Propósito</span><p style={dVal}>{viewItem.purpose || 'Sin descripción'}</p></div>
-            {viewItem.adminComment && <div style={{ ...dFull, background: viewItem.status === 'RECHAZADA' ? '#fef2f2' : '#f0fdf4', border: viewItem.status === 'RECHAZADA' ? '1px solid #fecaca' : '1px solid #bbf7d0' }}><span style={dLabel}>{viewItem.status === 'RECHAZADA' ? 'Motivo del rechazo' : 'Comentario del admin'}</span><p style={dVal}>{viewItem.adminComment}</p></div>}
-            {viewItem.returnCondition && <div style={dFull}><span style={dLabel}>Estado de devolución</span><p style={dVal}>{viewItem.returnCondition}{viewItem.returnDescription ? ` — ${viewItem.returnDescription}` : ''}</p></div>}
+            <Section t="Resumen">
+              <div style={dGrid}>
+                <Det l="ID de solicitud" v={`#${viewItem.id}`} />
+                <Det l="Estado" v={fmtStatus(viewItem.status)} />
+                <Det l="Recurso" v={viewItem.resourceName} />
+                <Det l="Tipo" v={viewItem.resourceType === 'SPACE' ? 'Espacio' : 'Equipo'} />
+              </div>
+            </Section>
+
+            <Section t="Fechas y horarios">
+              <div style={dGrid}>
+                <Det l="Fecha inicio" v={viewItem.reservationDate} />
+                <Det l="Hora inicio" v={viewItem.startTime} />
+                <Det l="Fecha devolución" v={viewItem.endDate || viewItem.reservationDate} />
+                <Det l="Hora devolución" v={viewItem.endTime} />
+              </div>
+            </Section>
+
+            <Section t="Notas">
+              <Det l="Propósito" v={viewItem.purpose || 'Sin descripción'} fw />
+              {viewItem.adminComment && (
+                <Det
+                  l={viewItem.status === 'RECHAZADA' ? 'Motivo del rechazo' : 'Comentario del administrador'}
+                  v={viewItem.adminComment}
+                  fw
+                  tone={viewItem.status === 'RECHAZADA' ? 'warning' : 'success'}
+                />
+              )}
+            </Section>
+
+            {viewItem.returnCondition && (
+              <Section t="Devolución">
+                <Det l="Estado de devolución" v={viewItem.returnCondition} />
+                {viewItem.returnDescription && <Det l="Detalle de devolución" v={viewItem.returnDescription} fw />}
+              </Section>
+            )}
           </div>
           <div style={mdFoot}><button type="button" onClick={() => setViewItem(null)} style={mdClBtn}>Cerrar</button></div>
         </div></div>
@@ -193,7 +220,21 @@ function RequestsPage() {
   )
 }
 
-function Det({ l, v }) { return <div><span style={dLabel}>{l}</span><p style={dVal}>{v}</p></div> }
+function Section({ t, children }) { return <section style={dSection}><h4 style={dSectionTitle}>{t}</h4>{children}</section> }
+function Det({ l, v, fw = false, tone = 'default' }) {
+  const toneStyle = tone === 'warning'
+    ? { background: '#fef2f2', border: '1px solid #fecaca' }
+    : tone === 'success'
+      ? { background: '#f0fdf4', border: '1px solid #bbf7d0' }
+      : {}
+
+  return (
+    <div style={fw ? { ...dFull, ...toneStyle } : { ...dBox, ...toneStyle }}>
+      <span style={dLabel}>{l}</span>
+      <p style={dVal}>{v}</p>
+    </div>
+  )
+}
 function fmtStatus(s) { return { PENDIENTE: 'Pendiente', APROBADA: 'Aprobada', RECHAZADA: 'Rechazada', CANCELADA: 'Cancelada', DEVUELTA: 'Devuelta' }[s] || s }
 function statusBadge(s) { const c = { PENDIENTE: { bg: '#fef3c7', c: '#92400e' }, APROBADA: { bg: '#dcfce7', c: '#15803d' }, RECHAZADA: { bg: '#fee2e2', c: '#dc2626' }, CANCELADA: { bg: '#f1f5f9', c: '#64748b' }, DEVUELTA: { bg: '#dbeafe', c: '#2563eb' } }; const x = c[s] || c.CANCELADA; return { background: x.bg, color: x.c, padding: '5px 12px', borderRadius: '999px', fontSize: '12px', fontWeight: 700, display: 'inline-block' } }
 function aBtn(bg, color, border) { return { width: '32px', height: '32px', borderRadius: '8px', border: `1px solid ${border}`, background: bg, color, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px' } }
@@ -233,8 +274,11 @@ const mdClBtn = { border: 'none', background: '#e2e8f0', color: '#0f172a', paddi
 const mdCanBtn = { border: 'none', background: 'transparent', color: '#64748b', padding: '10px 14px', fontWeight: 600, cursor: 'pointer' }
 const mdSvBtn = { border: 'none', background: '#00843D', color: '#fff', padding: '10px 18px', borderRadius: '12px', fontWeight: 700, cursor: 'pointer' }
 
-const dGrid = { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '16px' }
-const dFull = { background: '#f8fafc', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '12px 14px', marginTop: '12px' }
+const dSection = { border: '1px solid #e5e7eb', borderRadius: '14px', padding: '14px', background: '#fff', marginBottom: '14px' }
+const dSectionTitle = { marginBottom: '10px', color: '#1f2937', fontSize: '12px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.04em' }
+const dGrid = { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }
+const dBox = { background: '#f8fafc', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '12px 14px' }
+const dFull = { ...dBox, marginTop: '10px' }
 const dLabel = { display: 'block', color: '#94a3b8', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }
 const dVal = { color: '#111827', fontSize: '14px', fontWeight: 600 }
 

@@ -31,6 +31,7 @@ public class ReservationService {
     private final EquipmentRepository equipmentRepository;
     private final EmailService emailService;
 
+    @Transactional(readOnly = true)
     public Page<ReservationListItemResponse> getReservations(int page, int size, String filter) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
         Page<Reservation> rp;

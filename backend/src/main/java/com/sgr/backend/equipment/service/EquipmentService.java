@@ -71,7 +71,7 @@ public class EquipmentService {
         validateCommon(inventoryNumber, name, category, description, request.getAllowStudents(), request.getCondition());
 
         if (equipmentRepository.existsByInventoryNumberIgnoreCase(inventoryNumber)) {
-            throw new RuntimeException("Número de inventario no válido");
+            throw new RuntimeException("Ya existe un equipo con ese numero de inventario");
         }
 
         Space space = null;
@@ -107,7 +107,7 @@ public class EquipmentService {
         validateCommon(inventoryNumber, name, category, description, request.getAllowStudents(), request.getCondition());
 
         if (equipmentRepository.existsByInventoryNumberIgnoreCaseAndIdNot(inventoryNumber, id)) {
-            throw new RuntimeException("Número de inventario no válido");
+            throw new RuntimeException("Ya existe un equipo con ese numero de inventario");
         }
 
         Space space = null;
@@ -144,21 +144,44 @@ public class EquipmentService {
             Boolean allowStudents,
             EquipmentCondition condition
     ) {
-        if (inventoryNumber.isBlank() || name.isBlank() || category.isBlank()
-                || description.isBlank() || allowStudents == null || condition == null) {
-            throw new RuntimeException("Datos inválidos");
+        if (inventoryNumber.isBlank()) {
+            throw new RuntimeException("El numero de inventario es obligatorio");
+        }
+
+        if (name.isBlank()) {
+            throw new RuntimeException("El nombre del equipo es obligatorio");
+        }
+
+        if (category.isBlank()) {
+            throw new RuntimeException("La categoria del equipo es obligatoria");
+        }
+
+        if (description.isBlank()) {
+            throw new RuntimeException("La descripcion del equipo es obligatoria");
+        }
+
+        if (allowStudents == null) {
+            throw new RuntimeException("Debe indicar si el equipo permite estudiantes");
+        }
+
+        if (condition == null) {
+            throw new RuntimeException("La condicion del equipo es obligatoria");
         }
 
         if (inventoryNumber.length() < 3 || inventoryNumber.length() > 50) {
-            throw new RuntimeException("Número de inventario no válido");
+            throw new RuntimeException("El numero de inventario debe tener entre 3 y 50 caracteres");
         }
 
-        if (name.length() < 3 || category.length() < 3) {
-            throw new RuntimeException("Datos inválidos");
+        if (name.length() < 3 || name.length() > 100) {
+            throw new RuntimeException("El nombre del equipo debe tener entre 3 y 100 caracteres");
+        }
+
+        if (category.length() < 3 || category.length() > 50) {
+            throw new RuntimeException("La categoria del equipo debe tener entre 3 y 50 caracteres");
         }
 
         if (description.length() < 10 || description.length() > 500) {
-            throw new RuntimeException("Descripción no válida");
+            throw new RuntimeException("La descripcion del equipo debe tener entre 10 y 500 caracteres");
         }
     }
 

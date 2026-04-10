@@ -33,27 +33,63 @@ function EditSpaceModal({ space, onClose, onSuccess }) {
     setForm((prev) => ({ ...prev, [field]: value }))
   }
 
+  const getNormalizedForm = () => ({
+    name: form.name.trim().replace(/\s{2,}/g, ' '),
+    location: form.location.trim().replace(/\s{2,}/g, ' '),
+    description: form.description.trim().replace(/\s{2,}/g, ' '),
+  })
+
   const validateForm = () => {
-    if (
-      !form.name.trim() ||
-      !form.category ||
-      !form.location.trim() ||
-      !form.capacity ||
-      !form.description.trim() ||
-      !form.availability
-    ) {
-      showToast('error', 'Datos inválidos')
+    const normalizedForm = getNormalizedForm()
+
+    if (!normalizedForm.name) {
+      showToast('error', 'Ingresa el nombre del espacio.')
+      return false
+    }
+
+    if (normalizedForm.name.length < 3 || normalizedForm.name.length > 100) {
+      showToast('error', 'El nombre del espacio debe tener entre 3 y 100 caracteres.')
+      return false
+    }
+
+    if (!form.category) {
+      showToast('error', 'Selecciona la categoria del espacio.')
+      return false
+    }
+
+    if (!normalizedForm.location) {
+      showToast('error', 'Ingresa la ubicacion del espacio.')
+      return false
+    }
+
+    if (normalizedForm.location.length < 3 || normalizedForm.location.length > 150) {
+      showToast('error', 'La ubicacion debe tener entre 3 y 150 caracteres.')
+      return false
+    }
+
+    if (!form.capacity) {
+      showToast('error', 'Ingresa la capacidad del espacio.')
       return false
     }
 
     const cap = Number(form.capacity)
     if (Number.isNaN(cap) || cap < 1 || cap > 10000) {
-      showToast('error', 'Capacidad no válida')
+      showToast('error', 'La capacidad debe ser un numero entre 1 y 10000.')
       return false
     }
 
-    if (form.description.trim().length < 10 || form.description.trim().length > 500) {
-      showToast('error', 'Descripción no válida')
+    if (!normalizedForm.description) {
+      showToast('error', 'Ingresa una descripcion para el espacio.')
+      return false
+    }
+
+    if (normalizedForm.description.length < 10 || normalizedForm.description.length > 500) {
+      showToast('error', 'La descripcion debe tener entre 10 y 500 caracteres.')
+      return false
+    }
+
+    if (!form.availability) {
+      showToast('error', 'Selecciona la disponibilidad del espacio.')
       return false
     }
 
@@ -66,14 +102,15 @@ function EditSpaceModal({ space, onClose, onSuccess }) {
     if (!validateForm()) return
 
     setLoading(true)
+    const normalizedForm = getNormalizedForm()
 
     try {
       await updateSpace(space.id, {
-        name: form.name.trim().replace(/\s{2,}/g, ' '),
+        name: normalizedForm.name,
         category: form.category,
-        location: form.location.trim().replace(/\s{2,}/g, ' '),
+        location: normalizedForm.location,
         capacity: Number(form.capacity),
-        description: form.description.trim().replace(/\s{2,}/g, ' '),
+        description: normalizedForm.description,
         allowStudents: form.allowStudents,
         availability: form.availability,
         active: form.active,
@@ -83,7 +120,7 @@ function EditSpaceModal({ space, onClose, onSuccess }) {
       onSuccess()
       onClose()
     } catch (error) {
-      const message = error?.response?.data?.message || 'Datos inválidos'
+      const message = error?.response?.data?.message || 'No se pudo actualizar el espacio. Revisa los campos e intenta nuevamente.'
       showToast('error', message)
     } finally {
       setLoading(false)
@@ -108,7 +145,7 @@ function EditSpaceModal({ space, onClose, onSuccess }) {
           <section style={sectionStyle}>
             <div style={grid2Style}>
               <div style={fieldStyle}>
-                <label style={labelStyle}>Nombre*</label>
+                <label style={labelStyle}>Nombre</label>
                 <input
                   type="text"
                   value={form.name}
@@ -119,7 +156,7 @@ function EditSpaceModal({ space, onClose, onSuccess }) {
               </div>
 
               <div style={fieldStyle}>
-                <label style={labelStyle}>Categoría*</label>
+                <label style={labelStyle}>Categoría</label>
                 <select
                   value={form.category}
                   onChange={(e) => handleChange('category', e.target.value)}
@@ -135,7 +172,7 @@ function EditSpaceModal({ space, onClose, onSuccess }) {
               </div>
 
               <div style={fieldStyle}>
-                <label style={labelStyle}>Ubicación*</label>
+                <label style={labelStyle}>Ubicación</label>
                 <input
                   type="text"
                   value={form.location}
@@ -146,7 +183,7 @@ function EditSpaceModal({ space, onClose, onSuccess }) {
               </div>
 
               <div style={fieldStyle}>
-                <label style={labelStyle}>Capacidad*</label>
+                <label style={labelStyle}>Capacidad</label>
                 <input
                   type="text"
                   inputMode="numeric"
@@ -158,7 +195,7 @@ function EditSpaceModal({ space, onClose, onSuccess }) {
               </div>
 
               <div style={{ ...fieldStyle, gridColumn: '1 / -1' }}>
-                <label style={labelStyle}>Descripción*</label>
+                <label style={labelStyle}>Descripción </label>
                 <textarea
                   value={form.description}
                   onChange={(e) => handleChange('description', e.target.value)}
@@ -182,7 +219,7 @@ function EditSpaceModal({ space, onClose, onSuccess }) {
               </div>
 
               <div style={fieldStyle}>
-                <label style={labelStyle}>Disponibilidad*</label>
+                <label style={labelStyle}>Disponibilidad</label>
                 <select
                   value={form.availability}
                   onChange={(e) => handleChange('availability', e.target.value)}
@@ -196,7 +233,7 @@ function EditSpaceModal({ space, onClose, onSuccess }) {
               </div>
 
               <div style={fieldStyle}>
-                <label style={labelStyle}>Estado*</label>
+                <label style={labelStyle}>Estado</label>
                 <select
                   value={String(form.active)}
                   onChange={(e) => handleChange('active', e.target.value === 'true')}

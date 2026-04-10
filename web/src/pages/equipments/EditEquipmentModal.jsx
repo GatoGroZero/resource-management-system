@@ -46,20 +46,53 @@ function EditEquipmentModal({ equipment, onClose, onSuccess }) {
     setForm((prev) => ({ ...prev, [field]: value }))
   }
 
+  const getNormalizedForm = () => ({
+    inventoryNumber: form.inventoryNumber.trim(),
+    name: form.name.trim().replace(/\s{2,}/g, ' '),
+    category: form.category.trim().replace(/\s{2,}/g, ' '),
+    description: form.description.trim().replace(/\s{2,}/g, ' '),
+  })
+
   const validateForm = () => {
-    if (
-      !form.inventoryNumber.trim() ||
-      !form.name.trim() ||
-      !form.category.trim() ||
-      !form.description.trim() ||
-      !form.condition
-    ) {
-      showToast('error', 'Datos inválidos')
+    const normalizedForm = getNormalizedForm()
+
+    if (!normalizedForm.inventoryNumber) {
+      showToast('error', 'Ingresa el numero de inventario del equipo.')
       return false
     }
 
-    if (form.description.trim().length < 10 || form.description.trim().length > 500) {
-      showToast('error', 'Descripción no válida')
+    if (normalizedForm.inventoryNumber.length < 3 || normalizedForm.inventoryNumber.length > 50) {
+      showToast('error', 'El numero de inventario debe tener entre 3 y 50 caracteres.')
+      return false
+    }
+
+    if (!normalizedForm.name) {
+      showToast('error', 'Ingresa el nombre del equipo.')
+      return false
+    }
+
+    if (normalizedForm.name.length < 3 || normalizedForm.name.length > 100) {
+      showToast('error', 'El nombre del equipo debe tener entre 3 y 100 caracteres.')
+      return false
+    }
+
+    if (!normalizedForm.category) {
+      showToast('error', 'Selecciona el tipo de equipo.')
+      return false
+    }
+
+    if (!normalizedForm.description) {
+      showToast('error', 'Ingresa una descripcion para el equipo.')
+      return false
+    }
+
+    if (normalizedForm.description.length < 10 || normalizedForm.description.length > 500) {
+      showToast('error', 'La descripcion debe tener entre 10 y 500 caracteres.')
+      return false
+    }
+
+    if (!form.condition) {
+      showToast('error', 'Selecciona el estado del equipo.')
       return false
     }
 
@@ -71,13 +104,14 @@ function EditEquipmentModal({ equipment, onClose, onSuccess }) {
     if (!validateForm()) return
 
     setLoading(true)
+    const normalizedForm = getNormalizedForm()
 
     try {
       await updateEquipment(equipment.id, {
-        inventoryNumber: form.inventoryNumber.trim(),
-        name: form.name.trim().replace(/\s{2,}/g, ' '),
-        category: form.category.trim().replace(/\s{2,}/g, ' '),
-        description: form.description.trim().replace(/\s{2,}/g, ' '),
+        inventoryNumber: normalizedForm.inventoryNumber,
+        name: normalizedForm.name,
+        category: normalizedForm.category,
+        description: normalizedForm.description,
         allowStudents: form.allowStudents,
         condition: form.condition,
         active: form.active,
@@ -88,7 +122,7 @@ function EditEquipmentModal({ equipment, onClose, onSuccess }) {
       onSuccess()
       onClose()
     } catch (error) {
-      const message = error?.response?.data?.message || 'Datos inválidos'
+      const message = error?.response?.data?.message || 'No se pudo actualizar el equipo. Revisa los campos e intenta nuevamente.'
       showToast('error', message)
     } finally {
       setLoading(false)
