@@ -204,7 +204,7 @@ function EditUserModal({ user, onClose, onSuccess }) {
 
             <div style={grid2Style}>
               <div style={fieldStyle}>
-                <label style={labelStyle}>Nombre *</label>
+                <label style={labelStyle}>Nombre </label>
                 <input
                   type="text"
                   value={form.name}
@@ -215,7 +215,7 @@ function EditUserModal({ user, onClose, onSuccess }) {
               </div>
 
               <div style={fieldStyle}>
-                <label style={labelStyle}>Apellidos *</label>
+                <label style={labelStyle}>Apellidos </label>
                 <input
                   type="text"
                   value={form.lastName}
@@ -226,7 +226,7 @@ function EditUserModal({ user, onClose, onSuccess }) {
               </div>
 
               <div style={fieldStyle}>
-                <label style={labelStyle}>Fecha de Nacimiento *</label>
+                <label style={labelStyle}>Fecha de Nacimiento </label>
                 <input
                   type="date"
                   value={form.birthDate}
@@ -243,7 +243,7 @@ function EditUserModal({ user, onClose, onSuccess }) {
 
             <div style={grid2Style}>
               <div style={fieldStyle}>
-                <label style={labelStyle}>Rol *</label>
+                <label style={labelStyle}>Rol </label>
                 <select
                   value={form.roleSelection}
                   onChange={(e) => handleChange('roleSelection', e.target.value)}
@@ -257,7 +257,7 @@ function EditUserModal({ user, onClose, onSuccess }) {
               </div>
 
               <div style={fieldStyle}>
-                <label style={labelStyle}>Tipo de Usuario *</label>
+                <label style={labelStyle}>Tipo de Usuario </label>
                 <select
                   value={form.userType}
                   onChange={(e) => handleChange('userType', e.target.value)}
@@ -279,7 +279,7 @@ function EditUserModal({ user, onClose, onSuccess }) {
               </div>
 
               <div style={fieldStyle}>
-                <label style={labelStyle}>Matrícula o Número de Empleado *</label>
+                <label style={labelStyle}>Matrícula o Número de Empleado </label>
                 <input
                   type="text"
                   value={form.identifier}
@@ -290,7 +290,7 @@ function EditUserModal({ user, onClose, onSuccess }) {
               </div>
 
               <div style={fieldStyle}>
-                <label style={labelStyle}>Correo Institucional *</label>
+                <label style={labelStyle}>Correo Institucional </label>
                 <input
                   type="email"
                   value={form.email}
@@ -307,7 +307,7 @@ function EditUserModal({ user, onClose, onSuccess }) {
 
             <div style={grid2Style}>
               <div style={fieldStyle}>
-                <label style={labelStyle}>Teléfono *</label>
+                <label style={labelStyle}>Teléfono </label>
                 <input
                   type="text"
                   inputMode="numeric"
