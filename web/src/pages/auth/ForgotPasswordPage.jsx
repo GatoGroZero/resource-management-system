@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -12,6 +13,21 @@ const schema = z.object({
 
 function ForgotPasswordPage() {
   const navigate = useNavigate()
+
+  useEffect(() => {
+    const token = localStorage.getItem('token')
+    const userRaw = localStorage.getItem('user')
+
+    if (!token || !userRaw) return
+
+    try {
+      const parsedUser = JSON.parse(userRaw)
+      const redirectPath = parsedUser?.role === 'ADMIN' ? '/reservations' : '/dashboard'
+      navigate(redirectPath, { replace: true })
+    } catch {
+      /* ignore */
+    }
+  }, [navigate])
 
   const {
     register,
