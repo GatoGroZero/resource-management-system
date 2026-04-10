@@ -192,7 +192,7 @@ function EditUserModal({ user, onClose, onSuccess }) {
             <h2 style={titleStyle}>Editar Usuario</h2>
             <p style={subtitleStyle}>Actualiza la información del integrante.</p>
           </div>
-
+    
           <button type="button" onClick={onClose} style={backButtonStyle}>
             ← Volver
           </button>
