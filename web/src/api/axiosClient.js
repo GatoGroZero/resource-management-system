@@ -25,10 +25,20 @@ axiosClient.interceptors.request.use(
 axiosClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response && error.response.status === 401) {
-      localStorage.removeItem('token')
-      localStorage.removeItem('user')
-      window.location.href = '/login'
+    if (error?.response?.status === 401) {
+      const url = error?.config?.url || ''
+      const isAuthEndpoint = url.includes('/api/auth/')
+      const isAuthPage = typeof window !== 'undefined'
+        && ['/login', '/forgot-password', '/verify-otp', '/reset-password'].includes(window.location.pathname)
+
+      // Si es un 401 por credenciales/flujo de auth, NO forzar redirect aquí.
+      // Dejamos que la pantalla muestre el mensaje correspondiente.
+      if (!isAuthEndpoint && !isAuthPage) {
+        localStorage.removeItem('token')
+        localStorage.removeItem('user')
+        // replace evita que "atrás" regrese a una ruta protegida cacheada
+        window.location.replace('/login')
+      }
     }
     return Promise.reject(error)
   }

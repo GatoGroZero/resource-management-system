@@ -16,8 +16,22 @@ function VerifyOtpPage() {
   const email = localStorage.getItem('resetEmail') || ''
 
   useEffect(() => {
+    const token = localStorage.getItem('token')
+    const userRaw = localStorage.getItem('user')
+
+    if (token && userRaw) {
+      try {
+        const parsedUser = JSON.parse(userRaw)
+        const redirectPath = parsedUser?.role === 'ADMIN' ? '/reservations' : '/dashboard'
+        navigate(redirectPath, { replace: true })
+        return
+      } catch {
+        /* ignore */
+      }
+    }
+
     if (!email) {
-      navigate('/forgot-password')
+      navigate('/forgot-password', { replace: true })
     }
   }, [email, navigate])
 

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { loginRequest } from '../../api/authApi'
 import { useAuth } from '../../context/AuthContext'
@@ -14,6 +14,21 @@ function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState({})
   const [loginError, setLoginError] = useState('')
+
+  useEffect(() => {
+    const token = localStorage.getItem('token')
+    const userRaw = localStorage.getItem('user')
+
+    if (!token || !userRaw) return
+
+    try {
+      const parsedUser = JSON.parse(userRaw)
+      const redirectPath = parsedUser?.role === 'ADMIN' ? '/reservations' : '/dashboard'
+      navigate(redirectPath, { replace: true })
+    } catch {
+      /* ignore */
+    }
+  }, [navigate])
 
   const validate = () => {
     const e = {}
@@ -34,8 +49,8 @@ function LoginPage() {
       const response = await loginRequest({ email: email.trim(), password })
       login(response)
       showToast('success', 'Inicio de sesión correcto')
-      if (response.role === 'ADMIN') navigate('/reservations')
-      else navigate('/dashboard')
+      if (response.role === 'ADMIN') navigate('/reservations', { replace: true })
+      else navigate('/dashboard', { replace: true })
     } catch {
       setLoginError('Credenciales incorrectas. Verifica tu correo y contraseña.')
     } finally {

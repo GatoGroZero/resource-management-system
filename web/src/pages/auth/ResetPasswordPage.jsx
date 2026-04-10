@@ -23,8 +23,22 @@ function ResetPasswordPage() {
   const code = localStorage.getItem('resetCode') || ''
 
   useEffect(() => {
+    const token = localStorage.getItem('token')
+    const userRaw = localStorage.getItem('user')
+
+    if (token && userRaw) {
+      try {
+        const parsedUser = JSON.parse(userRaw)
+        const redirectPath = parsedUser?.role === 'ADMIN' ? '/reservations' : '/dashboard'
+        navigate(redirectPath, { replace: true })
+        return
+      } catch {
+        /* ignore */
+      }
+    }
+
     if (!email || !code) {
-      navigate('/forgot-password')
+      navigate('/forgot-password', { replace: true })
     }
   }, [email, code, navigate])
 
@@ -52,7 +66,7 @@ function ResetPasswordPage() {
       localStorage.removeItem('resetCode')
 
       showToast('success', 'Contraseña actualizada correctamente')
-      navigate('/login')
+      navigate('/login', { replace: true })
     } catch (error) {
       const message = error?.response?.data?.message || 'No se pudo actualizar la contraseña'
       showToast('error', message)
