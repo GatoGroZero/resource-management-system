@@ -134,7 +134,7 @@ function EquipmentsPage() {
     <DashboardLayout>
       <div style={headerRowStyle}>
         <div>
-          <h1 style={titleStyle}>Gestión de Inventario</h1>
+          <h1 style={titleStyle}>Gestión de equipos</h1>
           <p style={subtitleStyle}>Control de equipos, materiales y recursos institucionales.</p>
         </div>
 

@@ -15,7 +15,7 @@ function Sidebar() {
   const adminItems = [
     { label: 'Usuarios', path: '/users', icon: '👥' },
     { label: 'Espacios', path: '/spaces', icon: '🏢' },
-    { label: 'Inventario', path: '/inventory', icon: '📦' },
+    { label: 'Equipos', path: '/inventory', icon: '📦' },
     { label: 'Reservas', path: '/reservations', icon: '🗓️' },
     { label: 'Auditoría', path: '/history', icon: '🕘' },
   ]
@@ -73,11 +73,14 @@ const sidebarStyle = {
   minWidth: '202px',
   background: '#00843D',
   color: '#ffffff',
-  minHeight: '100vh',
+  height: '100vh',
   padding: '16px 10px',
   boxSizing: 'border-box',
   display: 'flex',
   flexDirection: 'column',
+  position: 'sticky',
+  top: 0,
+  alignSelf: 'flex-start',
 }
 
 const brandStyle = {
@@ -143,7 +146,7 @@ const logoutButtonStyle = {
   display: 'flex',
   alignItems: 'center',
   gap: '10px',
-  color: '#fecaca',
+  color: '#ffffff',
   background: 'none',
   border: 'none',
   padding: '13px 12px',

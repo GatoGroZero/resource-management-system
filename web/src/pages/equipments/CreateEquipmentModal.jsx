@@ -39,20 +39,53 @@ function CreateEquipmentModal({ onClose, onSuccess }) {
     setForm((prev) => ({ ...prev, [field]: value }))
   }
 
+  const getNormalizedForm = () => ({
+    inventoryNumber: form.inventoryNumber.trim(),
+    name: form.name.trim().replace(/\s{2,}/g, ' '),
+    category: form.category.trim().replace(/\s{2,}/g, ' '),
+    description: form.description.trim().replace(/\s{2,}/g, ' '),
+  })
+
   const validateForm = () => {
-    if (
-      !form.inventoryNumber.trim() ||
-      !form.name.trim() ||
-      !form.category.trim() ||
-      !form.description.trim() ||
-      !form.condition
-    ) {
-      showToast('error', 'Datos inválidos')
+    const normalizedForm = getNormalizedForm()
+
+    if (!normalizedForm.inventoryNumber) {
+      showToast('error', 'Ingresa el numero de inventario del equipo.')
       return false
     }
 
-    if (form.description.trim().length < 10 || form.description.trim().length > 500) {
-      showToast('error', 'Descripción no válida')
+    if (normalizedForm.inventoryNumber.length < 3 || normalizedForm.inventoryNumber.length > 50) {
+      showToast('error', 'El numero de inventario debe tener entre 3 y 50 caracteres.')
+      return false
+    }
+
+    if (!normalizedForm.name) {
+      showToast('error', 'Ingresa el nombre del equipo.')
+      return false
+    }
+
+    if (normalizedForm.name.length < 3 || normalizedForm.name.length > 100) {
+      showToast('error', 'El nombre del equipo debe tener entre 3 y 100 caracteres.')
+      return false
+    }
+
+    if (!normalizedForm.category) {
+      showToast('error', 'Selecciona el tipo de equipo.')
+      return false
+    }
+
+    if (!normalizedForm.description) {
+      showToast('error', 'Ingresa una descripcion para el equipo.')
+      return false
+    }
+
+    if (normalizedForm.description.length < 10 || normalizedForm.description.length > 500) {
+      showToast('error', 'La descripcion debe tener entre 10 y 500 caracteres.')
+      return false
+    }
+
+    if (!form.condition) {
+      showToast('error', 'Selecciona el estado del equipo.')
       return false
     }
 
@@ -64,13 +97,14 @@ function CreateEquipmentModal({ onClose, onSuccess }) {
     if (!validateForm()) return
 
     setLoading(true)
+    const normalizedForm = getNormalizedForm()
 
     try {
       await createEquipment({
-        inventoryNumber: form.inventoryNumber.trim(),
-        name: form.name.trim().replace(/\s{2,}/g, ' '),
-        category: form.category.trim().replace(/\s{2,}/g, ' '),
-        description: form.description.trim().replace(/\s{2,}/g, ' '),
+        inventoryNumber: normalizedForm.inventoryNumber,
+        name: normalizedForm.name,
+        category: normalizedForm.category,
+        description: normalizedForm.description,
         allowStudents: form.allowStudents,
         condition: form.condition,
         active: form.active,
@@ -81,7 +115,7 @@ function CreateEquipmentModal({ onClose, onSuccess }) {
       onSuccess()
       onClose()
     } catch (error) {
-      const message = error?.response?.data?.message || 'Datos inválidos'
+      const message = error?.response?.data?.message || 'No se pudo registrar el equipo. Revisa los campos e intenta nuevamente.'
       showToast('error', message)
     } finally {
       setLoading(false)
@@ -99,7 +133,7 @@ function CreateEquipmentModal({ onClose, onSuccess }) {
         <form onSubmit={handleSubmit} style={formStyle}>
           <div style={grid2Style}>
             <div style={fieldStyle}>
-              <label style={labelStyle}>Número de Inventario</label>
+              <label style={labelStyle}>Número de Inventario*</label>
               <input
                 type="text"
                 value={form.inventoryNumber}
@@ -110,7 +144,7 @@ function CreateEquipmentModal({ onClose, onSuccess }) {
             </div>
 
             <div style={fieldStyle}>
-              <label style={labelStyle}>Nombre del Equipo</label>
+              <label style={labelStyle}>Nombre del Equipo*</label>
               <input
                 type="text"
                 value={form.name}
@@ -121,7 +155,7 @@ function CreateEquipmentModal({ onClose, onSuccess }) {
             </div>
 
             <div style={fieldStyle}>
-              <label style={labelStyle}>Tipo</label>
+              <label style={labelStyle}>Tipo*</label>
               <select
                 value={form.category}
                 onChange={(e) => handleChange('category', e.target.value)}
@@ -150,7 +184,7 @@ function CreateEquipmentModal({ onClose, onSuccess }) {
             </div>
 
             <div style={{ ...fieldStyle, gridColumn: '1 / -1' }}>
-              <label style={labelStyle}>Descripción</label>
+              <label style={labelStyle}>Descripción*</label>
               <textarea
                 value={form.description}
                 onChange={(e) => handleChange('description', e.target.value)}

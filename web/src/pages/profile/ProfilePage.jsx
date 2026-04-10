@@ -1,14 +1,16 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import DashboardLayout from '../../components/layout/DashboardLayout'
 import PageHeader from '../../components/common/PageHeader'
 import AppCard from '../../components/common/AppCard'
 import { useAuth } from '../../context/AuthContext'
 import { updateProfile, changePassword } from '../../api/profileApi'
+import { getUserById } from '../../api/userApi'
 import { showToast } from '../../utils/alertUtils'
 import { formatRole } from '../../utils/formatUtils'
 
 function ProfilePage() {
   const { user, login } = useAuth()
+  const [profileUser, setProfileUser] = useState(user)
 
   // Teléfono
   const [editingPhone, setEditingPhone] = useState(false)
@@ -25,6 +27,31 @@ function ProfilePage() {
   const [showNew, setShowNew] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
 
+  useEffect(() => {
+    const loadProfile = async () => {
+      if (!user?.userId) return
+      try {
+        const detailedUser = await getUserById(user.userId)
+        const mergedUser = { ...user, ...detailedUser }
+        setProfileUser(mergedUser)
+        if (!editingPhone) {
+          setPhone(mergedUser.phone || '')
+        }
+      } catch {
+        setProfileUser(user)
+      }
+    }
+
+    loadProfile()
+  }, [user?.userId])
+
+  useEffect(() => {
+    setProfileUser(user)
+    if (!editingPhone) {
+      setPhone(user?.phone || '')
+    }
+  }, [user])
+
   const handleSavePhone = async () => {
     const cleaned = phone.replace(/\s/g, '')
     if (!cleaned) { setPhoneError('El teléfono es obligatorio'); return }
@@ -33,7 +60,8 @@ function ProfilePage() {
     setPhoneLoading(true)
     try {
       await updateProfile(user.userId, { phone: cleaned })
-      const updated = { ...user, phone: cleaned }
+      const updated = { ...profileUser, phone: cleaned }
+      setProfileUser(updated)
       login(updated)
       showToast('success', 'Teléfono actualizado correctamente')
       setEditingPhone(false)
@@ -42,7 +70,7 @@ function ProfilePage() {
     } finally { setPhoneLoading(false) }
   }
 
-  const handleCancelPhone = () => { setPhone(user?.phone || ''); setPhoneError(''); setEditingPhone(false) }
+  const handleCancelPhone = () => { setPhone(profileUser?.phone || ''); setPhoneError(''); setEditingPhone(false) }
 
   const validatePassword = () => {
     const e = {}
@@ -82,20 +110,20 @@ function ProfilePage() {
       <div style={wrapperStyle}>
         {/* Card principal */}
         <AppCard style={profileCardStyle}>
-          <div style={avatarStyle}>{(user?.name?.[0] || 'U').toUpperCase()}</div>
+          <div style={avatarStyle}>{(profileUser?.name?.[0] || 'U').toUpperCase()}</div>
           <div style={{ flex: 1 }}>
-            <h2 style={nameStyle}>{user?.name} {user?.lastName}</h2>
-            <p style={roleStyle}>{formatRole(user?.role)}</p>
-            <p style={emailDisplayStyle}>{user?.email}</p>
+            <h2 style={nameStyle}>{profileUser?.name} {profileUser?.lastName}</h2>
+            <p style={roleStyle}>{formatRole(profileUser?.role)}</p>
+            <p style={emailDisplayStyle}>{profileUser?.email}</p>
           </div>
         </AppCard>
 
         {/* Datos de solo lectura */}
         <div style={gridStyle}>
-          <AppCard><span style={labelStyle}>Nombre</span><p style={valueStyle}>{user?.name || '—'}</p></AppCard>
-          <AppCard><span style={labelStyle}>Apellidos</span><p style={valueStyle}>{user?.lastName || '—'}</p></AppCard>
-          <AppCard><span style={labelStyle}>Correo institucional</span><p style={valueStyle}>{user?.email || '—'}</p></AppCard>
-          <AppCard><span style={labelStyle}>Rol</span><p style={valueStyle}>{formatRole(user?.role)}</p></AppCard>
+          <AppCard><span style={labelStyle}>Nombre</span><p style={valueStyle}>{profileUser?.name || '—'}</p></AppCard>
+          <AppCard><span style={labelStyle}>Apellidos</span><p style={valueStyle}>{profileUser?.lastName || '—'}</p></AppCard>
+          <AppCard><span style={labelStyle}>Correo institucional</span><p style={valueStyle}>{profileUser?.email || '—'}</p></AppCard>
+          <AppCard><span style={labelStyle}>Rol</span><p style={valueStyle}>{formatRole(profileUser?.role)}</p></AppCard>
         </div>
 
         {/* Sección: Teléfono */}
@@ -108,7 +136,7 @@ function ProfilePage() {
           </div>
 
           {!editingPhone ? (
-            <p style={sectionValueStyle}>{user?.phone || 'Sin teléfono registrado'}</p>
+            <p style={sectionValueStyle}>{profileUser?.phone || 'Sin teléfono registrado'}</p>
           ) : (
             <div style={editBlockStyle}>
               <div style={fldStyle}>

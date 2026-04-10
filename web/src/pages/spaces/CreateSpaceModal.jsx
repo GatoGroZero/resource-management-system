@@ -26,27 +26,63 @@ function CreateSpaceModal({ onClose, onSuccess }) {
     setForm((prev) => ({ ...prev, [field]: value }))
   }
 
+  const getNormalizedForm = () => ({
+    name: form.name.trim().replace(/\s{2,}/g, ' '),
+    location: form.location.trim().replace(/\s{2,}/g, ' '),
+    description: form.description.trim().replace(/\s{2,}/g, ' '),
+  })
+
   const validateForm = () => {
-    if (
-      !form.name.trim() ||
-      !form.category ||
-      !form.location.trim() ||
-      !form.capacity ||
-      !form.description.trim() ||
-      !form.availability
-    ) {
-      showToast('error', 'Datos inválidos')
+    const normalizedForm = getNormalizedForm()
+
+    if (!normalizedForm.name) {
+      showToast('error', 'Ingresa el nombre del espacio.')
+      return false
+    }
+
+    if (normalizedForm.name.length < 3 || normalizedForm.name.length > 100) {
+      showToast('error', 'El nombre del espacio debe tener entre 3 y 100 caracteres.')
+      return false
+    }
+
+    if (!form.category) {
+      showToast('error', 'Selecciona la categoria del espacio.')
+      return false
+    }
+
+    if (!normalizedForm.location) {
+      showToast('error', 'Ingresa la ubicacion del espacio.')
+      return false
+    }
+
+    if (normalizedForm.location.length < 3 || normalizedForm.location.length > 150) {
+      showToast('error', 'La ubicacion debe tener entre 3 y 150 caracteres.')
+      return false
+    }
+
+    if (!form.capacity) {
+      showToast('error', 'Ingresa la capacidad del espacio.')
       return false
     }
 
     const cap = Number(form.capacity)
     if (Number.isNaN(cap) || cap < 1 || cap > 10000) {
-      showToast('error', 'Capacidad no válida')
+      showToast('error', 'La capacidad debe ser un numero entre 1 y 10000.')
       return false
     }
 
-    if (form.description.trim().length < 10 || form.description.trim().length > 500) {
-      showToast('error', 'Descripción no válida')
+    if (!normalizedForm.description) {
+      showToast('error', 'Ingresa una descripcion para el espacio.')
+      return false
+    }
+
+    if (normalizedForm.description.length < 10 || normalizedForm.description.length > 500) {
+      showToast('error', 'La descripcion debe tener entre 10 y 500 caracteres.')
+      return false
+    }
+
+    if (!form.availability) {
+      showToast('error', 'Selecciona la disponibilidad del espacio.')
       return false
     }
 
@@ -59,14 +95,15 @@ function CreateSpaceModal({ onClose, onSuccess }) {
     if (!validateForm()) return
 
     setLoading(true)
+    const normalizedForm = getNormalizedForm()
 
     try {
       await createSpace({
-        name: form.name.trim().replace(/\s{2,}/g, ' '),
+        name: normalizedForm.name,
         category: form.category,
-        location: form.location.trim().replace(/\s{2,}/g, ' '),
+        location: normalizedForm.location,
         capacity: Number(form.capacity),
-        description: form.description.trim().replace(/\s{2,}/g, ' '),
+        description: normalizedForm.description,
         allowStudents: form.allowStudents,
         availability: form.availability,
         active: form.active,
@@ -76,7 +113,7 @@ function CreateSpaceModal({ onClose, onSuccess }) {
       onSuccess()
       onClose()
     } catch (error) {
-      const message = error?.response?.data?.message || 'Datos inválidos'
+      const message = error?.response?.data?.message || 'No se pudo registrar el espacio. Revisa los campos e intenta nuevamente.'
       showToast('error', message)
     } finally {
       setLoading(false)
