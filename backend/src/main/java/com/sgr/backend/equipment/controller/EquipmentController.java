@@ -9,7 +9,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
@@ -20,6 +22,7 @@ public class EquipmentController {
 
     private final EquipmentService equipmentService;
 
+    @PreAuthorize("isAuthenticated()")
     @GetMapping
     public ResponseEntity<Page<EquipmentListItemResponse>> getEquipments(
             @RequestParam(defaultValue = "0") int page,
@@ -30,28 +33,34 @@ public class EquipmentController {
         return ResponseEntity.ok(equipmentService.getEquipments(page, size, filter, search));
     }
 
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/{id}")
     public ResponseEntity<EquipmentDetailResponse> getEquipmentById(@PathVariable Long id) {
         return ResponseEntity.ok(equipmentService.getEquipmentById(id));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<?> createEquipment(@Valid @RequestBody CreateEquipmentRequest request) {
         equipmentService.createEquipment(request);
         return ResponseEntity.ok().build();
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<?> updateEquipment(@PathVariable Long id, @Valid @RequestBody UpdateEquipmentRequest request) {
         equipmentService.updateEquipment(id, request);
         return ResponseEntity.ok().build();
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/{id}/toggle-status")
     public ResponseEntity<?> toggleEquipmentStatus(@PathVariable Long id) {
         equipmentService.toggleEquipmentStatus(id);
         return ResponseEntity.ok().build();
     }
+
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/by-space/{spaceId}")
     public ResponseEntity<List<EquipmentListItemResponse>> getBySpace(@PathVariable Long spaceId) {
         return ResponseEntity.ok(equipmentService.getEquipmentsBySpaceId(spaceId));

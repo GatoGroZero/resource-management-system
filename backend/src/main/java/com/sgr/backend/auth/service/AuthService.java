@@ -23,7 +23,6 @@ import java.util.Random;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class AuthService {
 
     private final AuthenticationManager authenticationManager;
@@ -34,88 +33,41 @@ public class AuthService {
     private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
 
+    @Transactional(readOnly = true)
     public LoginResponse login(LoginRequest request) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getEmail(),
-                        request.getPassword()
-                )
-        );
-
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new BadCredentialsException("Credenciales inválidas"));
-
+        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
+        User user = userRepository.findByEmail(request.getEmail()).orElseThrow(() -> new BadCredentialsException("Credenciales inválidas"));
         UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
         String token = jwtService.generateToken(userDetails);
-
-        return LoginResponse.builder()
-                .token(token)
-                .tokenType("Bearer")
-                .userId(user.getId())
-                .name(user.getName())
-                .lastName(user.getLastName())
-                .email(user.getEmail())
-                .role(user.getRole())
-                .build();
+        return LoginResponse.builder().token(token).tokenType("Bearer").userId(user.getId()).name(user.getName()).lastName(user.getLastName()).email(user.getEmail()).role(user.getRole()).build();
     }
 
+    @Transactional
     public void forgotPassword(String email) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-
-        otpRepository.findTopByUserAndUsedFalseOrderByIdDesc(user)
-                .ifPresent(existingOtp -> {
-                    existingOtp.setUsed(true);
-                    otpRepository.save(existingOtp);
-                });
-
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        otpRepository.findTopByUserAndUsedFalseOrderByIdDesc(user).ifPresent(existingOtp -> { existingOtp.setUsed(true); otpRepository.save(existingOtp); });
         String code = String.format("%06d", new Random().nextInt(1_000_000));
-
-        PasswordResetOtp otp = PasswordResetOtp.builder()
-                .code(code)
-                .user(user)
-                .used(false)
-                .expiresAt(LocalDateTime.now().plusMinutes(15))
-                .build();
-
+        PasswordResetOtp otp = PasswordResetOtp.builder().code(code).user(user).used(false).expiresAt(LocalDateTime.now().plusMinutes(15)).build();
         otpRepository.save(otp);
         emailService.sendOtpEmail(user.getEmail(), code);
     }
 
+    @Transactional(readOnly = true)
     public void verifyOtp(String email, String code) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-
-        PasswordResetOtp otp = otpRepository.findTopByUserAndUsedFalseOrderByIdDesc(user)
-                .orElseThrow(() -> new RuntimeException("Código inválido"));
-
-        if (!otp.getCode().equals(code)) {
-            throw new RuntimeException("Código incorrecto");
-        }
-
-        if (otp.getExpiresAt().isBefore(LocalDateTime.now())) {
-            throw new RuntimeException("Código expirado");
-        }
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        PasswordResetOtp otp = otpRepository.findTopByUserAndUsedFalseOrderByIdDesc(user).orElseThrow(() -> new RuntimeException("Código inválido"));
+        if (!otp.getCode().equals(code)) throw new RuntimeException("Código incorrecto");
+        if (otp.getExpiresAt().isBefore(LocalDateTime.now())) throw new RuntimeException("Código expirado");
     }
 
+    @Transactional
     public void resetPassword(String email, String code, String newPassword) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-
-        PasswordResetOtp otp = otpRepository.findTopByUserAndUsedFalseOrderByIdDesc(user)
-                .orElseThrow(() -> new RuntimeException("Código inválido"));
-
-        if (!otp.getCode().equals(code)) {
-            throw new RuntimeException("Código incorrecto");
-        }
-
-        if (otp.getExpiresAt().isBefore(LocalDateTime.now())) {
-            throw new RuntimeException("Código expirado");
-        }
-
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        PasswordResetOtp otp = otpRepository.findTopByUserAndUsedFalseOrderByIdDesc(user).orElseThrow(() -> new RuntimeException("Código inválido"));
+        if (!otp.getCode().equals(code)) throw new RuntimeException("Código incorrecto");
+        if (otp.getExpiresAt().isBefore(LocalDateTime.now())) throw new RuntimeException("Código expirado");
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
-
         otp.setUsed(true);
         otpRepository.save(otp);
     }
