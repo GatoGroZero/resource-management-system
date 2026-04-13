@@ -10,6 +10,7 @@ import com.sgr.backend.space.repository.SpaceRepository;
 import com.sgr.backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -21,6 +22,7 @@ public class DashboardService {
     private final ReservationRepository reservationRepository;
     private final ReservationRequestRepository reservationRequestRepository;
 
+    @Transactional(readOnly = true)
     public DashboardStatsResponse getStats() {
         return DashboardStatsResponse.builder()
                 .totalUsers(userRepository.count())

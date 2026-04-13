@@ -22,7 +22,6 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class ReservationService {
 
     private final ReservationRepository reservationRepository;
@@ -50,10 +49,12 @@ public class ReservationService {
         return rp.map(this::toListResponse);
     }
 
+    @Transactional(readOnly = true)
     public ReservationDetailResponse getReservationById(Long id) {
         return toDetailResponse(reservationRepository.findById(id).orElseThrow(() -> new RuntimeException("Reserva no encontrada")));
     }
 
+    @Transactional(readOnly = true)
     public ReservationFormOptionsResponse getFormOptions() {
         List<ReservationOptionResponse> users = userRepository.findByActiveTrue().stream()
                 .map(u -> ReservationOptionResponse.builder().id(u.getId()).label(u.getName() + " " + u.getLastName()).build()).toList();
@@ -64,6 +65,7 @@ public class ReservationService {
         return ReservationFormOptionsResponse.builder().users(users).spaces(spaces).equipments(equipments).build();
     }
 
+    @Transactional
     public void createReservation(CreateReservationRequest request) {
         if (request.getRequesterId() == null || request.getResourceType() == null || request.getResourceId() == null
                 || request.getReservationDate() == null || request.getStartTime() == null || request.getEndTime() == null
@@ -112,6 +114,7 @@ public class ReservationService {
         try { emailService.sendReservationCreatedEmail(requester.getEmail(), rn, saved.getReservationDate().toString(), saved.getStartTime().toString(), saved.getEndTime().toString()); } catch (Exception e) { }
     }
 
+    @Transactional
     public void approveReservation(Long id, String adminComment) {
         Reservation r = getEntity(id);
         if (r.getStatus() != ReservationStatus.PENDIENTE) throw new RuntimeException("La reserva ya no se puede aprobar");
@@ -122,6 +125,7 @@ public class ReservationService {
         try { emailService.sendReservationApprovedEmail(r.getRequester().getEmail(), rn, r.getReservationDate().toString(), r.getStartTime().toString(), r.getEndTime().toString()); } catch (Exception e) { }
     }
 
+    @Transactional
     public void rejectReservation(Long id, String adminComment) {
         Reservation r = getEntity(id);
         if (r.getStatus() != ReservationStatus.PENDIENTE) throw new RuntimeException("La reserva ya no se puede rechazar");
@@ -133,6 +137,7 @@ public class ReservationService {
         try { emailService.sendReservationRejectedEmail(r.getRequester().getEmail(), rn, r.getReservationDate().toString(), r.getAdminComment()); } catch (Exception e) { }
     }
 
+    @Transactional
     public void returnReservation(Long id, ReturnReservationRequest request) {
         Reservation r = getEntity(id);
         if (r.getStatus() != ReservationStatus.APROBADA) throw new RuntimeException("Solo se pueden devolver reservas aprobadas");
@@ -144,6 +149,7 @@ public class ReservationService {
         reservationRepository.save(r);
     }
 
+    @Transactional
     public void cancelReservation(Long id) {
         Reservation r = getEntity(id);
         if (r.getStatus() == ReservationStatus.RECHAZADA || r.getStatus() == ReservationStatus.CANCELADA || r.getStatus() == ReservationStatus.DEVUELTA)
@@ -152,14 +158,17 @@ public class ReservationService {
         reservationRepository.save(r);
     }
 
+    @Transactional(readOnly = true)
     public List<ReservationListItemResponse> getReservationsBySpaceId(Long spaceId) {
         return reservationRepository.findBySpaceIdOrderByReservationDateDesc(spaceId).stream().map(this::toListResponse).toList();
     }
 
+    @Transactional(readOnly = true)
     public List<ReservationListItemResponse> getReservationsByEquipmentId(Long equipmentId) {
         return reservationRepository.findByEquipmentIdOrderByReservationDateDesc(equipmentId).stream().map(this::toListResponse).toList();
     }
 
+    @Transactional(readOnly = true)
     public Page<ReservationListItemResponse> getAuditRecords(int page, int size, String filter) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
         List<ReservationStatus> as = List.of(ReservationStatus.APROBADA, ReservationStatus.RECHAZADA, ReservationStatus.CANCELADA, ReservationStatus.DEVUELTA);
@@ -178,6 +187,7 @@ public class ReservationService {
         return rp.map(this::toListResponse);
     }
 
+    @Transactional(readOnly = true)
     public Page<ReservationListItemResponse> getMyReservations(Long userId, int page, int size, String filter) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
         Page<Reservation> rp;
@@ -194,12 +204,14 @@ public class ReservationService {
         return rp.map(this::toListResponse);
     }
 
+    @Transactional(readOnly = true)
     public ReservationDetailResponse getMyReservationById(Long id, Long userId) {
         Reservation r = reservationRepository.findById(id).orElseThrow(() -> new RuntimeException("Reserva no encontrada"));
         if (!r.getRequester().getId().equals(userId)) throw new RuntimeException("No autorizado");
         return toDetailResponse(r);
     }
 
+    @Transactional
     public void updateMyReservation(Long id, Long userId, CreateReservationRequest request) {
         Reservation r = reservationRepository.findById(id).orElseThrow(() -> new RuntimeException("Reserva no encontrada"));
         if (!r.getRequester().getId().equals(userId)) throw new RuntimeException("No autorizado");
@@ -227,6 +239,7 @@ public class ReservationService {
         reservationRepository.save(r);
     }
 
+    @Transactional
     public void cancelMyReservation(Long id, Long userId) {
         Reservation r = reservationRepository.findById(id).orElseThrow(() -> new RuntimeException("Reserva no encontrada"));
         if (!r.getRequester().getId().equals(userId)) throw new RuntimeException("No autorizado");
