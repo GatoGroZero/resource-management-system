@@ -39,8 +39,7 @@ public class AuthService {
         User user = userRepository.findByEmail(request.getEmail()).orElseThrow(() -> new BadCredentialsException("Credenciales inválidas"));
         UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
         String token = jwtService.generateToken(userDetails);
-        return LoginResponse.builder().token(token).tokenType("Bearer").userId(user.getId()).name(user.getName()).lastName(user.getLastName()).email(user.getEmail()).role(user.getRole()).build();
-    }
+        return LoginResponse.builder().token(token).tokenType("Bearer").userId(user.getId()).name(user.getName()).lastName(user.getLastName()).email(user.getEmail()).role(user.getRole()).phone(user.getPhone()).build();    }
 
     @Transactional
     public void forgotPassword(String email) {
