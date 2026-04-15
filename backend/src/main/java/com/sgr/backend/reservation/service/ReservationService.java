@@ -132,11 +132,45 @@ public class ReservationService {
             if (overlaps) throw new RuntimeException("No se puede aprobar: ya existe otra reserva aprobada en ese horario para este equipo");
         }
 
+        // Aprobar esta reserva
         r.setStatus(ReservationStatus.APROBADA);
         r.setAdminComment(normalizeNullableText(adminComment));
         reservationRepository.save(r);
-        String rn = r.getResourceType() == ReservationResourceType.SPACE ? r.getSpace().getName() : r.getEquipment().getName();
-        try { emailService.sendReservationApprovedEmail(r.getRequester().getEmail(), rn, r.getReservationDate().toString(), r.getStartTime().toString(), r.getEndTime().toString()); } catch (Exception e) { }
+
+        // Rechazar automáticamente todas las PENDIENTES que se crucen en horario con este mismo recurso
+        String resourceName = r.getResourceType() == ReservationResourceType.SPACE ? r.getSpace().getName() : r.getEquipment().getName();
+        String autoRejectMessage = "Solicitud rechazada automáticamente: el recurso \"" + resourceName + "\" ya fue asignado a otro solicitante en un horario que se cruza con el tuyo (" + r.getReservationDate() + " de " + r.getStartTime() + " a " + r.getEndTime() + ").";
+
+        List<Reservation> overlapping;
+
+        if (r.getResourceType() == ReservationResourceType.SPACE) {
+            overlapping = reservationRepository.findBySpaceAndReservationDateAndStatusAndIdNotAndStartTimeLessThanAndEndTimeGreaterThan(
+                    r.getSpace(), r.getReservationDate(), ReservationStatus.PENDIENTE, r.getId(),
+                    r.getEndTime(), r.getStartTime());
+        } else {
+            overlapping = reservationRepository.findByEquipmentAndReservationDateAndStatusAndIdNotAndStartTimeLessThanAndEndTimeGreaterThan(
+                    r.getEquipment(), r.getReservationDate(), ReservationStatus.PENDIENTE, r.getId(),
+                    r.getEndTime(), r.getStartTime());
+        }
+
+        for (Reservation pending : overlapping) {
+            pending.setStatus(ReservationStatus.RECHAZADA);
+            pending.setAdminComment(autoRejectMessage);
+            reservationRepository.save(pending);
+
+            // Notificar por email al solicitante rechazado
+            try {
+                emailService.sendReservationRejectedEmail(
+                        pending.getRequester().getEmail(), resourceName,
+                        pending.getReservationDate().toString(), autoRejectMessage);
+            } catch (Exception e) { }
+        }
+
+        // Notificar al solicitante aprobado
+        try {
+            emailService.sendReservationApprovedEmail(r.getRequester().getEmail(), resourceName,
+                    r.getReservationDate().toString(), r.getStartTime().toString(), r.getEndTime().toString());
+        } catch (Exception e) { }
     }
 
     @Transactional
