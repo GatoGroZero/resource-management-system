@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react'
 import { createEquipment } from '../../api/equipmentApi'
 import { getSpaces } from '../../api/spaceApi'
-import { showToast } from '../../utils/alertUtils'
-
+import { showToast, showConfirm } from '../../utils/alertUtils'
 function CreateEquipmentModal({ onClose, onSuccess }) {
   const [form, setForm] = useState({
     inventoryNumber: '',
@@ -98,6 +97,9 @@ function CreateEquipmentModal({ onClose, onSuccess }) {
 
     setLoading(true)
     const normalizedForm = getNormalizedForm()
+
+    const confirmed = await showConfirm('¿Registrar equipo?', 'Se creará un nuevo equipo en el sistema. ¿Deseas continuar?', 'Sí, registrar')
+    if (!confirmed) return
 
     try {
       await createEquipment({

@@ -4,8 +4,7 @@ import CreateUserModal from './CreateUserModal'
 import ViewUserModal from './ViewUserModal'
 import EditUserModal from './EditUserModal'
 import { getUserById, getUsers, toggleUserStatus } from '../../api/userApi'
-import { showToast } from '../../utils/alertUtils'
-
+import { showToast, showConfirm } from '../../utils/alertUtils'
 function UsersPage() {
   const [usersPage, setUsersPage] = useState(null)
   const [page, setPage] = useState(0)
@@ -113,12 +112,20 @@ function UsersPage() {
       return
     }
 
+    const action = user.active ? 'desactivar' : 'activar'
+    const confirmed = await showConfirm(
+      `¿${user.active ? 'Desactivar' : 'Activar'} usuario?`,
+      `Se va a ${action} a ${user.fullName}. ¿Deseas continuar?`,
+      `Sí, ${action}`
+    )
+    if (!confirmed) return
+
     try {
       await toggleUserStatus(user.id)
-      showToast('success', 'Estado actualizado correctamente')
+      showToast('success', `Usuario ${action === 'desactivar' ? 'desactivado' : 'activado'} correctamente`)
       fetchUsers()
     } catch (error) {
-      const message = error?.response?.data?.message || 'Datos inválidos'
+      const message = error?.response?.data?.message || 'Error al actualizar estado'
       showToast('error', message)
     }
   }

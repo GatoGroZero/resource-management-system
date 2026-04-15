@@ -175,15 +175,26 @@ function ReservationsPage() {
               </div>
             </Section>
 
-            <Section t="Reserva">
+            <Section t="Recurso">
               <div style={dGrid}>
                 <Det l="Tipo de recurso" v={viewItem.resourceType === 'SPACE' ? 'Espacio' : 'Equipo'} />
                 <Det l="Recurso" v={viewItem.resourceName} />
+              </div>
+            </Section>
+
+            <Section t="Horario de préstamo">
+              <div style={dGrid}>
                 <Det l="Fecha inicio" v={viewItem.reservationDate} />
                 <Det l="Hora inicio" v={viewItem.startTime} />
-                <Det l="Fecha devolución" v={viewItem.endDate || viewItem.reservationDate} />
+                <Det l="Fecha devolución esperada" v={viewItem.endDate || viewItem.reservationDate} />
                 <Det l="Hora fin" v={viewItem.endTime} />
-                <Det l="Estado" v={fmtStatus(viewItem.status)} />
+                {viewItem.returnedAt && <Det l="Devolución real" v={formatDateWithTime(viewItem.returnedAt)} />}
+              </div>
+            </Section>
+
+            <Section t="Estado">
+              <div style={dGrid}>
+                <Det l="Estatus" v={fmtStatus(viewItem.status)} />
               </div>
             </Section>
 
@@ -193,13 +204,14 @@ function ReservationsPage() {
               <Det l="Comentario administrativo" v={viewItem.adminComment || '—'} fw />
             </Section>
 
-            {(viewItem.returnCondition || viewItem.returnDescription || viewItem.returnedAt) && (
-              <Section t="Devolución">
+            {(viewItem.returnCondition || viewItem.returnedAt) && (
+              <Section t="Devolución realizada">
                 <div style={dGrid}>
-                  {viewItem.returnCondition && <Det l="Estado devolución" v={viewItem.returnCondition} />}
-                  {viewItem.returnedAt && <Det l="Devuelto el" v={viewItem.returnedAt} />}
+                  {viewItem.returnCondition && <Det l="Estado del recurso" v={viewItem.returnCondition === 'BUEN_ESTADO' ? '✅ Buen estado' : '⚠ Dañado'} />}
+                  {viewItem.returnedAt && <Det l="Fecha y hora real de devolución" v={formatDateWithTime(viewItem.returnedAt)} />}
+                  {viewItem.endDate && <Det l="Fecha comprometida" v={viewItem.endDate} />}
                 </div>
-                {viewItem.returnDescription && <Det l="Descripción devolución" v={viewItem.returnDescription} fw />}
+                {viewItem.returnDescription && <Det l="Descripción del daño" v={viewItem.returnDescription} fw />}
               </Section>
             )}
           </div>
@@ -265,6 +277,19 @@ function ReservationsPage() {
               <span style={{ ...rejectInfoLabel, marginTop: '8px' }}>Recurso</span>
               <p style={rejectInfoValue}>{returnItem.resourceName}</p>
             </div>
+
+            {/* Fechas de devolución */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+              <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '12px', padding: '12px 14px' }}>
+                <span style={{ display: 'block', color: '#92400e', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>Fecha comprometida</span>
+                <p style={{ color: '#92400e', fontSize: '14px', fontWeight: 700 }}>{returnItem.endDate || returnItem.reservationDate || '—'}</p>
+              </div>
+              <div style={{ background: '#ecfdf5', border: '1px solid #bbf7d0', borderRadius: '12px', padding: '12px 14px' }}>
+                <span style={{ display: 'block', color: '#15803d', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>Devolución real</span>
+                <p style={{ color: '#15803d', fontSize: '14px', fontWeight: 700 }}>{formatDateWithTime(new Date())}</p>
+              </div>
+            </div>
+
             <div style={fldStyle}>
               <label style={fLabel}>Estado de devolución *</label>
               <div style={radioGroupStyle}>
@@ -300,6 +325,20 @@ function ReservationsPage() {
 function Section({ t, children }) { return <section style={detailSectionStyle}><h4 style={detailSectionTitleStyle}>{t}</h4>{children}</section> }
 function Det({ l, v, fw = false }) { return <div style={fw ? detBoxFull : detBox}><span style={detLabel}>{l}</span><p style={detValue}>{v}</p></div> }
 function fmtStatus(s) { return { PENDIENTE: 'Pendiente', APROBADA: 'En préstamo', RECHAZADA: 'Rechazada', CANCELADA: 'Cancelada', DEVUELTA: 'Devuelta' }[s] || s }
+function formatDateWithTime(value) {
+  if (!value) return '—'
+  const date = value instanceof Date ? value : new Date(value)
+  if (Number.isNaN(date.getTime())) return '—'
+  const yyyy = date.getFullYear()
+  const mm = String(date.getMonth() + 1).padStart(2, '0')
+  const dd = String(date.getDate()).padStart(2, '0')
+  const hours24 = date.getHours()
+  const period = hours24 >= 12 ? 'p. m.' : 'a. m.'
+  const hours12 = hours24 % 12 || 12
+  const hh = String(hours12).padStart(2, '0')
+  const min = String(date.getMinutes()).padStart(2, '0')
+  return `${yyyy}-${mm}-${dd} ${hh}:${min} ${period}`
+}
 function statusBadge(s) {
   const c = { PENDIENTE: { bg: '#fef3c7', c: '#92400e' }, APROBADA: { bg: '#dbeafe', c: '#2563eb' }, RECHAZADA: { bg: '#fee2e2', c: '#dc2626' }, CANCELADA: { bg: '#f1f5f9', c: '#64748b' }, DEVUELTA: { bg: '#dcfce7', c: '#15803d' } }
   const x = c[s] || c.CANCELADA; return { background: x.bg, color: x.c, padding: '5px 12px', borderRadius: '999px', fontSize: '12px', fontWeight: 700, display: 'inline-block' }
@@ -336,12 +375,12 @@ const pgBtn = (d) => ({ width: '36px', height: '36px', border: '1px solid #e5e7e
 
 // Modales
 const ovStyle = { position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.5)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '18px', zIndex: 120 }
-const mdStyle = { width: '100%', maxWidth: '680px', maxHeight: '90vh', overflowY: 'auto', background: '#fff', borderRadius: '18px', boxShadow: '0 24px 48px rgba(0,0,0,0.15)', overflow: 'hidden' }
+const mdStyle = { width: '100%', maxWidth: '680px', maxHeight: '90vh', background: '#fff', borderRadius: '18px', boxShadow: '0 24px 48px rgba(0,0,0,0.15)', overflow: 'hidden', display: 'flex', flexDirection: 'column' }
 const mdHead = { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', padding: '20px 24px', borderBottom: '1px solid #f1f5f9', background: '#f8fafc' }
 const mdTitle = { fontSize: '17px', fontWeight: 800, color: '#111827' }
 const mdSub = { fontSize: '13px', color: '#94a3b8', marginTop: '2px' }
 const clBtn = { border: 'none', background: 'transparent', color: '#94a3b8', fontSize: '22px', cursor: 'pointer' }
-const mdBody = { padding: '20px 24px' }
+const mdBody = { padding: '20px 24px', overflowY: 'auto', flex: 1, minHeight: 0 }
 const mdFoot = { padding: '14px 24px', borderTop: '1px solid #f1f5f9', background: '#f8fafc', display: 'flex', justifyContent: 'flex-end', gap: '12px' }
 const mdClBtn = { border: 'none', background: '#e2e8f0', color: '#0f172a', padding: '10px 16px', borderRadius: '12px', fontWeight: 700, cursor: 'pointer' }
 const mdCanBtn = { border: 'none', background: 'transparent', color: '#64748b', padding: '10px 14px', fontWeight: 600, cursor: 'pointer' }

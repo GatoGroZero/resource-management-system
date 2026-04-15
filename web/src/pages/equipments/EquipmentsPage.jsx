@@ -5,7 +5,7 @@ import ViewEquipmentModal from './ViewEquipmentModal'
 import EditEquipmentModal from './EditEquipmentModal'
 import HistoryEquipmentModal from './HistoryEquipmentModal'
 import { getEquipmentById, getEquipments, toggleEquipmentStatus } from '../../api/equipmentApi'
-import { showToast } from '../../utils/alertUtils'
+import { showToast, showConfirm } from '../../utils/alertUtils'
 
 function EquipmentsPage() {
   const [equipmentsPage, setEquipmentsPage] = useState(null)
@@ -112,12 +112,19 @@ function EquipmentsPage() {
   }
 
   const handleToggleStatus = async (id) => {
+    const confirmed = await showConfirm(
+      '¿Cambiar estado del equipo?',
+      'Esta acción activará o desactivará el equipo. ¿Deseas continuar?',
+      'Sí, cambiar estado'
+    )
+    if (!confirmed) return
+
     try {
       await toggleEquipmentStatus(id)
       showToast('success', 'Estado actualizado correctamente')
       fetchEquipments()
-    } catch {
-      showToast('error', 'Datos inválidos')
+    } catch (error) {
+      showToast('error', error?.response?.data?.message || 'Error al actualizar estado')
     }
   }
 

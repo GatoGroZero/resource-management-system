@@ -5,8 +5,7 @@ import ViewSpaceModal from './ViewSpaceModal'
 import EditSpaceModal from './EditSpaceModal'
 import HistorySpaceModal from './HistorySpaceModal'
 import { getSpaceById, getSpaces, toggleSpaceStatus } from '../../api/spaceApi'
-import { showToast } from '../../utils/alertUtils'
-
+import { showToast, showConfirm } from '../../utils/alertUtils'
 function SpacesPage() {
   const [spacesPage, setSpacesPage] = useState(null)
   const [page, setPage] = useState(0)
@@ -109,15 +108,21 @@ function SpacesPage() {
   }
 
   const handleToggleStatus = async (id) => {
+    const confirmed = await showConfirm(
+      '¿Cambiar estado del espacio?',
+      'Esta acción activará o desactivará el espacio. ¿Deseas continuar?',
+      'Sí, cambiar estado'
+    )
+    if (!confirmed) return
+
     try {
       await toggleSpaceStatus(id)
       showToast('success', 'Estado actualizado correctamente')
       fetchSpaces()
-    } catch {
-      showToast('error', 'Datos inválidos')
+    } catch (error) {
+      showToast('error', error?.response?.data?.message || 'Error al actualizar estado')
     }
   }
-
   const handleHistory = async (id) => {
     try {
       const data = await getSpaceById(id)

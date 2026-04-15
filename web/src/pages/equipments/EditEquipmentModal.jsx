@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react'
 import { updateEquipment } from '../../api/equipmentApi'
 import { getSpaces } from '../../api/spaceApi'
-import { showToast } from '../../utils/alertUtils'
-
+import { showToast, showConfirm } from '../../utils/alertUtils'
 function EditEquipmentModal({ equipment, onClose, onSuccess }) {
   const [form, setForm] = useState(null)
   const [spaces, setSpaces] = useState([])
@@ -105,6 +104,9 @@ function EditEquipmentModal({ equipment, onClose, onSuccess }) {
 
     setLoading(true)
     const normalizedForm = getNormalizedForm()
+
+    const confirmed = await showConfirm('¿Guardar cambios?', 'Se actualizarán los datos del equipo. ¿Deseas continuar?', 'Sí, guardar')
+    if (!confirmed) return
 
     try {
       await updateEquipment(equipment.id, {
