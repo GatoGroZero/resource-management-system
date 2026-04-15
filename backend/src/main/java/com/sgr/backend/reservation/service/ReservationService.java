@@ -132,7 +132,8 @@ public class ReservationService {
             if (overlaps) throw new RuntimeException("No se puede aprobar: ya existe otra reserva aprobada en ese horario para este equipo");
         }
 
-        // Aprobar esta reserva
+        // Aprobar esta reservap
+
         r.setStatus(ReservationStatus.APROBADA);
         r.setAdminComment(normalizeNullableText(adminComment));
         reservationRepository.save(r);
