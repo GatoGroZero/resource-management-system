@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react'
 import DashboardLayout from '../../components/layout/DashboardLayout'
 import { getReservationById, getReservations, approveReservation, rejectReservation, cancelReservation, returnReservation } from '../../api/reservationApi'
-import { showToast } from '../../utils/alertUtils'
-
+import { showToast, showConfirm } from '../../utils/alertUtils'
 function ReservationsPage() {
   const [reservationsPage, setReservationsPage] = useState(null)
   const [page, setPage] = useState(0)
@@ -49,6 +48,10 @@ function ReservationsPage() {
   const handleConfirmReject = async () => {
     if (!rejectReason.trim()) { setRejectError('Debe proporcionar un motivo de rechazo'); return }
     if (rejectReason.trim().length < 10) { setRejectError('Mínimo 10 caracteres'); return }
+
+    const confirmed = await showConfirm('¿Confirmar rechazo?', `Se rechazará la solicitud de ${rejectItem.requesterName}. Esta acción no se puede deshacer.`, 'Sí, rechazar')
+    if (!confirmed) return
+
     setLoading(true)
     try { await rejectReservation(rejectItem.id, rejectReason.trim()); showToast('success', 'Reserva rechazada'); setRejectItem(null); setRejectReason(''); fetchReservations() }
     catch (e) { showToast('error', e?.response?.data?.message || 'Error') }
@@ -201,8 +204,13 @@ function ReservationsPage() {
             <Section t="Notas">
               <Det l="Motivo" v={viewItem.purpose || '—'} fw />
               <Det l="Observaciones" v={viewItem.observations || '—'} fw />
-              <Det l="Comentario administrativo" v={viewItem.adminComment || '—'} fw />
             </Section>
+
+            {viewItem.adminComment && (
+              <Section t="Motivo de rechazo">
+                <Det l="Motivo de rechazo" v={viewItem.adminComment} fw />
+              </Section>
+            )}
 
             {(viewItem.returnCondition || viewItem.returnedAt) && (
               <Section t="Devolución realizada">
