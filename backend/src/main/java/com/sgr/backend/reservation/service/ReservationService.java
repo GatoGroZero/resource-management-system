@@ -118,6 +118,20 @@ public class ReservationService {
     public void approveReservation(Long id, String adminComment) {
         Reservation r = getEntity(id);
         if (r.getStatus() != ReservationStatus.PENDIENTE) throw new RuntimeException("La reserva ya no se puede aprobar");
+
+        // Validar que no haya otra reserva APROBADA en el mismo horario
+        List<ReservationStatus> blockingStatuses = List.of(ReservationStatus.APROBADA);
+
+        if (r.getResourceType() == ReservationResourceType.SPACE) {
+            boolean overlaps = reservationRepository.existsBySpaceAndReservationDateAndStatusInAndStartTimeLessThanAndEndTimeGreaterThan(
+                    r.getSpace(), r.getReservationDate(), blockingStatuses, r.getEndTime(), r.getStartTime());
+            if (overlaps) throw new RuntimeException("No se puede aprobar: ya existe otra reserva aprobada en ese horario para este espacio");
+        } else {
+            boolean overlaps = reservationRepository.existsByEquipmentAndReservationDateAndStatusInAndStartTimeLessThanAndEndTimeGreaterThan(
+                    r.getEquipment(), r.getReservationDate(), blockingStatuses, r.getEndTime(), r.getStartTime());
+            if (overlaps) throw new RuntimeException("No se puede aprobar: ya existe otra reserva aprobada en ese horario para este equipo");
+        }
+
         r.setStatus(ReservationStatus.APROBADA);
         r.setAdminComment(normalizeNullableText(adminComment));
         reservationRepository.save(r);

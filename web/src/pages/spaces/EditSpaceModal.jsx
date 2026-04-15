@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { updateSpace } from '../../api/spaceApi'
-import { showToast } from '../../utils/alertUtils'
-
+import { showToast, showConfirm } from '../../utils/alertUtils'
 function EditSpaceModal({ space, onClose, onSuccess }) {
   const [form, setForm] = useState(null)
   const [loading, setLoading] = useState(false)
@@ -103,6 +102,9 @@ function EditSpaceModal({ space, onClose, onSuccess }) {
 
     setLoading(true)
     const normalizedForm = getNormalizedForm()
+
+    const confirmed = await showConfirm('¿Guardar cambios?', 'Se actualizarán los datos del espacio. ¿Deseas continuar?', 'Sí, guardar')
+    if (!confirmed) return
 
     try {
       await updateSpace(space.id, {

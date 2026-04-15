@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { createUser } from '../../api/userApi'
-import { showToast } from '../../utils/alertUtils'
-
+import { showToast, showConfirm } from '../../utils/alertUtils'
 function CreateUserModal({ onClose, onSuccess }) {
   const [form, setForm] = useState({
     name: '', lastName: '', birthDate: '', roleSelection: '', userType: '',
@@ -91,6 +90,9 @@ function CreateUserModal({ onClose, onSuccess }) {
     if (!validate()) return
 
     setLoading(true)
+
+    const confirmed = await showConfirm('¿Registrar usuario?', 'Se creará un nuevo usuario en el sistema. ¿Deseas continuar?', 'Sí, registrar')
+    if (!confirmed) return
     try {
       await createUser(mapToBackendPayload())
       showToast('success', 'Usuario registrado correctamente')

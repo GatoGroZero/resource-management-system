@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { updateUser } from '../../api/userApi'
-import { showToast } from '../../utils/alertUtils'
-
+import { showToast, showConfirm } from '../../utils/alertUtils'
 function EditUserModal({ user, onClose, onSuccess }) {
   const [form, setForm] = useState(null)
   const [loading, setLoading] = useState(false)
@@ -168,6 +167,9 @@ function EditUserModal({ user, onClose, onSuccess }) {
     if (!validateForm()) return
 
     setLoading(true)
+
+    const confirmed = await showConfirm('¿Guardar cambios?', 'Se actualizarán los datos del usuario. ¿Deseas continuar?', 'Sí, guardar')
+    if (!confirmed) return
 
     try {
       await updateUser(user.id, mapToBackendPayload())

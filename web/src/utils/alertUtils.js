@@ -21,3 +21,18 @@ export const showAlert = (icon, title, text) => {
     confirmButtonText: 'Entendido',
   })
 }
+
+export const showConfirm = async (title, text, confirmText = 'Sí, continuar', icon = 'question') => {
+  const result = await Swal.fire({
+    icon,
+    title,
+    text,
+    showCancelButton: true,
+    confirmButtonColor: '#00843D',
+    cancelButtonColor: '#64748b',
+    confirmButtonText: confirmText,
+    cancelButtonText: 'Cancelar',
+    reverseButtons: true,
+  })
+  return result.isConfirmed
+}

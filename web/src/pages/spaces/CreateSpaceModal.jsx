@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { createSpace } from '../../api/spaceApi'
-import { showToast } from '../../utils/alertUtils'
-
+import { showToast, showConfirm } from '../../utils/alertUtils'
 function CreateSpaceModal({ onClose, onSuccess }) {
   const [form, setForm] = useState({
     name: '',
@@ -96,6 +95,9 @@ function CreateSpaceModal({ onClose, onSuccess }) {
 
     setLoading(true)
     const normalizedForm = getNormalizedForm()
+
+    const confirmed = await showConfirm('¿Registrar espacio?', 'Se creará un nuevo espacio en el sistema. ¿Deseas continuar?', 'Sí, registrar')
+    if (!confirmed) return
 
     try {
       await createSpace({
