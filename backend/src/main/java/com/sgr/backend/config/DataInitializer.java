@@ -23,6 +23,7 @@ public class DataInitializer {
     public CommandLineRunner initUsers() {
         return args -> {
 
+            // ADMIN
             if (!userRepository.existsByEmail("20243ds003@utez.edu.mx")) {
                 userRepository.save(User.builder()
                         .name("Admin")
@@ -34,39 +35,41 @@ public class DataInitializer {
                         .active(true)
                         .birthDate(LocalDate.of(2000, 1, 1))
                         .userType("Administrativo")
-                        .phone("7770000000")
+                        .phone("7770912773")
                         .createdAt(LocalDateTime.now())
                         .build());
             }
 
-            if (!userRepository.existsByEmail("zeropanda0369@gmail.com")) {
+            // ESTUDIANTE
+            if (!userRepository.existsByEmail("20243ds004@utez.edu.mx")) {
                 userRepository.save(User.builder()
-                        .name("Maria")
-                        .lastName("González López")
-                        .email("zeropanda0369@gmail.com")
-                        .identifier("20233TI001")
+                        .name("Luis")
+                        .lastName("Estudiante Demo")
+                        .email("20243ds004@utez.edu.mx")
+                        .identifier("20243ds004")
                         .password(passwordEncoder.encode("12345678"))
                         .role(Role.STUDENT)
                         .active(true)
                         .birthDate(LocalDate.of(2003, 5, 10))
                         .userType("Estudiante")
-                        .phone("7771234567")
+                        .phone("7776798227")
                         .createdAt(LocalDateTime.now())
                         .build());
             }
 
-            if (!userRepository.existsByEmail("personal@sgr.com")) {
+            // PERSONAL
+            if (!userRepository.existsByEmail("20233tn141@utez.edu.mx")) {
                 userRepository.save(User.builder()
-                        .name("Juan")
-                        .lastName("Pérez García")
-                        .email("personal@sgr.com")
-                        .identifier("EMP-2026-001")
+                        .name("Personal")
+                        .lastName("UTEZ Demo")
+                        .email("20233tn141@utez.edu.mx")
+                        .identifier("20233tn141")
                         .password(passwordEncoder.encode("12345678"))
                         .role(Role.STAFF)
                         .active(true)
                         .birthDate(LocalDate.of(1995, 8, 15))
                         .userType("Personal Académico")
-                        .phone("7777654321")
+                        .phone("77770184661")
                         .createdAt(LocalDateTime.now())
                         .build());
             }

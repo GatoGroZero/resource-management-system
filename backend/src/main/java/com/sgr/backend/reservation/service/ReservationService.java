@@ -111,7 +111,12 @@ public class ReservationService {
 
         Reservation saved = reservationRepository.save(builder.build());
         String rn = saved.getResourceType() == ReservationResourceType.SPACE ? saved.getSpace().getName() : saved.getEquipment().getName();
-        try { emailService.sendReservationCreatedEmail(requester.getEmail(), rn, saved.getReservationDate().toString(), saved.getStartTime().toString(), saved.getEndTime().toString()); } catch (Exception e) { }
+        String endDateStr = saved.getEndDate() != null ? saved.getEndDate().toString() : saved.getReservationDate().toString();
+        try {
+            emailService.sendReservationCreatedEmail(requester.getEmail(), rn,
+                    saved.getReservationDate().toString(), endDateStr,
+                    saved.getStartTime().toString(), saved.getEndTime().toString());
+        } catch (Exception e) { }
     }
 
     @Transactional
@@ -132,8 +137,7 @@ public class ReservationService {
             if (overlaps) throw new RuntimeException("No se puede aprobar: ya existe otra reserva aprobada en ese horario para este equipo");
         }
 
-        // Aprobar esta reservap
-
+        // Aprobar esta reserva
         r.setStatus(ReservationStatus.APROBADA);
         r.setAdminComment(normalizeNullableText(adminComment));
         reservationRepository.save(r);
@@ -160,17 +164,22 @@ public class ReservationService {
             reservationRepository.save(pending);
 
             // Notificar por email al solicitante rechazado
+            String pendingEndDate = pending.getEndDate() != null ? pending.getEndDate().toString() : pending.getReservationDate().toString();
             try {
                 emailService.sendReservationRejectedEmail(
                         pending.getRequester().getEmail(), resourceName,
-                        pending.getReservationDate().toString(), autoRejectMessage);
+                        pending.getReservationDate().toString(), pendingEndDate,
+                        pending.getStartTime().toString(), pending.getEndTime().toString(),
+                        autoRejectMessage);
             } catch (Exception e) { }
         }
 
         // Notificar al solicitante aprobado
+        String endDateStr = r.getEndDate() != null ? r.getEndDate().toString() : r.getReservationDate().toString();
         try {
             emailService.sendReservationApprovedEmail(r.getRequester().getEmail(), resourceName,
-                    r.getReservationDate().toString(), r.getStartTime().toString(), r.getEndTime().toString());
+                    r.getReservationDate().toString(), endDateStr,
+                    r.getStartTime().toString(), r.getEndTime().toString());
         } catch (Exception e) { }
     }
 
@@ -183,7 +192,13 @@ public class ReservationService {
         r.setAdminComment(normalizeText(adminComment));
         reservationRepository.save(r);
         String rn = r.getResourceType() == ReservationResourceType.SPACE ? r.getSpace().getName() : r.getEquipment().getName();
-        try { emailService.sendReservationRejectedEmail(r.getRequester().getEmail(), rn, r.getReservationDate().toString(), r.getAdminComment()); } catch (Exception e) { }
+        String endDateStr = r.getEndDate() != null ? r.getEndDate().toString() : r.getReservationDate().toString();
+        try {
+            emailService.sendReservationRejectedEmail(r.getRequester().getEmail(), rn,
+                    r.getReservationDate().toString(), endDateStr,
+                    r.getStartTime().toString(), r.getEndTime().toString(),
+                    r.getAdminComment());
+        } catch (Exception e) { }
     }
 
     @Transactional
