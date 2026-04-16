@@ -15,8 +15,11 @@ function RoleRoute({ allowedRoles }) {
     return <Navigate to="/login" replace />
   }
 
+  // Si no es admin, borrar sesión y mandarlo al login
   if (!allowedRoles.includes(user?.role)) {
-    return <Navigate to="/dashboard" replace />
+    localStorage.removeItem('token')
+    localStorage.removeItem('user')
+    return <Navigate to="/login?onlyAdmin=1" replace />
   }
 
   return <Outlet />
