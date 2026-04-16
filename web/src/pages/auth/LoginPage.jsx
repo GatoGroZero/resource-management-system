@@ -47,10 +47,17 @@ function LoginPage() {
     setLoading(true)
     try {
       const response = await loginRequest({ email: email.trim(), password })
+
+      // Bloquear solicitantes
+      if (response.role !== 'ADMIN') {
+        setLoginError('Esta plataforma es exclusiva para administradores. Los solicitantes deben usar la aplicación móvil.')
+        setLoading(false)
+        return
+      }
+
       login(response)
       showToast('success', 'Inicio de sesión correcto')
-      if (response.role === 'ADMIN') navigate('/reservations', { replace: true })
-      else navigate('/dashboard', { replace: true })
+      navigate('/reservations', { replace: true })
     } catch {
       setLoginError('Credenciales incorrectas. Verifica tu correo y contraseña.')
     } finally {
