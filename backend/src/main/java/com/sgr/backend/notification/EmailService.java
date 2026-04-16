@@ -35,14 +35,15 @@ public class EmailService {
         mailSender.send(message);
     }
 
-    public void sendReservationCreatedEmail(String to, String resourceName, String date, String startTime, String endTime) {
+    public void sendReservationCreatedEmail(String to, String resourceName, String startDate, String endDate, String startTime, String endTime) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(to);
         message.setSubject("Solicitud de reservación registrada");
         message.setText(
                 "Tu solicitud de reservación ha sido registrada correctamente.\n\n" +
                         "Recurso: " + resourceName + "\n" +
-                        "Fecha: " + date + "\n" +
+                        "Fecha de inicio: " + startDate + "\n" +
+                        "Fecha de devolución: " + endDate + "\n" +
                         "Horario: " + startTime + " - " + endTime + "\n\n" +
                         "Estado: PENDIENTE\n" +
                         "Un administrador revisará tu solicitud próximamente."
@@ -50,28 +51,31 @@ public class EmailService {
         mailSender.send(message);
     }
 
-    public void sendReservationApprovedEmail(String to, String resourceName, String date, String startTime, String endTime) {
+    public void sendReservationApprovedEmail(String to, String resourceName, String startDate, String endDate, String startTime, String endTime) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(to);
         message.setSubject("Reservación aprobada");
         message.setText(
                 "Tu reservación ha sido APROBADA.\n\n" +
                         "Recurso: " + resourceName + "\n" +
-                        "Fecha: " + date + "\n" +
+                        "Fecha de inicio: " + startDate + "\n" +
+                        "Fecha de devolución: " + endDate + "\n" +
                         "Horario: " + startTime + " - " + endTime + "\n\n" +
-                        "Recuerda presentarte puntualmente."
+                        "Recuerda presentarte puntualmente y realizar la devolución en la fecha indicada."
         );
         mailSender.send(message);
     }
 
-    public void sendReservationRejectedEmail(String to, String resourceName, String date, String adminComment) {
+    public void sendReservationRejectedEmail(String to, String resourceName, String startDate, String endDate, String startTime, String endTime, String adminComment) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(to);
         message.setSubject("Reservación rechazada");
         message.setText(
                 "Tu reservación ha sido RECHAZADA.\n\n" +
                         "Recurso: " + resourceName + "\n" +
-                        "Fecha: " + date + "\n" +
+                        "Fecha de inicio: " + startDate + "\n" +
+                        "Fecha de devolución: " + endDate + "\n" +
+                        "Horario: " + startTime + " - " + endTime + "\n\n" +
                         (adminComment != null && !adminComment.isBlank()
                                 ? "Motivo: " + adminComment + "\n\n"
                                 : "\n") +

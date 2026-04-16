@@ -26,19 +26,24 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     long countByStatus(ReservationStatus status);
 
     boolean existsBySpaceAndReservationDateAndStatusInAndStartTimeLessThanAndEndTimeGreaterThan(
-            Space space,
-            LocalDate reservationDate,
-            List<ReservationStatus> statuses,
-            LocalTime endTime,
-            LocalTime startTime
+            Space space, LocalDate reservationDate, List<ReservationStatus> statuses,
+            LocalTime endTime, LocalTime startTime
     );
 
     boolean existsByEquipmentAndReservationDateAndStatusInAndStartTimeLessThanAndEndTimeGreaterThan(
-            Equipment equipment,
-            LocalDate reservationDate,
-            List<ReservationStatus> statuses,
-            LocalTime endTime,
-            LocalTime startTime
+            Equipment equipment, LocalDate reservationDate, List<ReservationStatus> statuses,
+            LocalTime endTime, LocalTime startTime
+    );
+
+    // Buscar reservas que se cruzan en horario (para rechazo automático)
+    List<Reservation> findBySpaceAndReservationDateAndStatusAndIdNotAndStartTimeLessThanAndEndTimeGreaterThan(
+            Space space, LocalDate reservationDate, ReservationStatus status, Long excludeId,
+            LocalTime endTime, LocalTime startTime
+    );
+
+    List<Reservation> findByEquipmentAndReservationDateAndStatusAndIdNotAndStartTimeLessThanAndEndTimeGreaterThan(
+            Equipment equipment, LocalDate reservationDate, ReservationStatus status, Long excludeId,
+            LocalTime endTime, LocalTime startTime
     );
 
     Page<Reservation> findByStatusIn(List<ReservationStatus> statuses, Pageable pageable);
@@ -46,9 +51,8 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     Page<Reservation> findByStatusInAndResourceType(List<ReservationStatus> statuses, ReservationResourceType resourceType, Pageable pageable);
 
     Page<Reservation> findByStatusInAndStatus(List<ReservationStatus> statusList, ReservationStatus status, Pageable pageable);
+
     Page<Reservation> findByRequesterId(Long requesterId, Pageable pageable);
 
     Page<Reservation> findByRequesterIdAndStatus(Long requesterId, ReservationStatus status, Pageable pageable);
-
-    
 }
